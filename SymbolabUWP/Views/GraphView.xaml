@@ -1,0 +1,22 @@
+﻿<Page
+    x:Class="SymbolabUWP.Views.GraphView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:SymbolabUWP.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:canv="using:Microsoft.Graphics.Canvas.UI.Xaml"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+        <TextBox x:Name="EquationBox" IsReadOnly="True"
+                 Text="{x:Bind FormulaText, Mode=TwoWay}" Grid.Row="0"/>
+        <canv:CanvasControl x:Name="GraphCanvas" Grid.Row="1" Draw="GraphCanvas_Draw" />
+    </Grid>
+</Page>
