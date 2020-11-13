@@ -206,17 +206,6 @@
       <Version>1.68.3</Version>
     </PackageReference>
   </ItemGroup>
-  <ItemGroup>
-    <Reference Include="BasecodeLibrary">
-      <HintPath>..\..\DotNetRussell\UWPLibrary\BasecodeLibrary\BasecodeLibrary\bin\Debug\BasecodeLibrary.dll</HintPath>
-    </Reference>
-    <Reference Include="CSharpMath.Evaluation">
-      <HintPath>..\..\CSharpMath\CSharpMath.Evaluation\bin\Debug\netstandard2.0\CSharpMath.Evaluation.dll</HintPath>
-    </Reference>
-    <Reference Include="CSharpMath.Uno">
-      <HintPath>..\..\CSharpMath\CSharpMath.Uno\bin\Debug\uap10.0.16299\CSharpMath.Uno.dll</HintPath>
-    </Reference>
-  </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>
