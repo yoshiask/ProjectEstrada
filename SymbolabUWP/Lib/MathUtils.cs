@@ -1,9 +1,6 @@
 ﻿using AngouriMath;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SymbolabUWP.Lib
 {
@@ -11,13 +8,17 @@ namespace SymbolabUWP.Lib
     {
         public static IEnumerable<double> FindVerticalAsymptotes(string funcString, string variName)
         {
-            return FindVerticalAsymptotes(funcString, new VariableEntity(variName));
+            return FindVerticalAsymptotes(funcString, MathS.Var(variName));
         }
-        public static IEnumerable<double> FindVerticalAsymptotes(string funcString, VariableEntity vari)
+        public static IEnumerable<double> FindVerticalAsymptotes(string funcString, Entity.Variable vari)
         {
-            Entity equation = $"1 / ({funcString})";
-            EntitySet set = equation.SolveEquation(vari);
-            return set.Select(s => s.GetValue().Re);
+            Entity equation = MathS.FromString($"1 / ({funcString})").Simplify();
+            Entity.Set set = equation.SolveEquation(vari);
+            return set.DirectChildren.Select(s =>
+            {
+                var val = s.EvalNumerical().ToNumerics().Real;
+                return val;
+            });
         }
     }
 }

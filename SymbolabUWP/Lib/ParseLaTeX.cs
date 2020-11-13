@@ -16,14 +16,53 @@ namespace SymbolabUWP.Lib
         public static string ConvertToAngouriMathString(string latexIn)
         {
             string output = "";
-            var matches = Regex.Matches(latexIn, @"\\?(\{.*\}|[^\\\s])*");
+            var matches = Regex.Matches(latexIn.Replace(@"\ ", " "), @"\\?(\{.*\}|[^\\\s])*");
             foreach (Match m in matches)
             {
                 string lPart = m.Value;
                 if (lPart.Length == 0)
                     continue;
 
-                if (lPart.StartsWith(@"\cdot"))
+                if (Char.IsDigit(lPart[0]) && Char.IsLetter(lPart.Last()))
+                {
+                    int startOfVar = 1;
+                    while (Char.IsDigit(lPart[startOfVar]))
+                    {
+                        if (startOfVar + 1 < lPart.Length)
+                            startOfVar++;
+                    }
+                    lPart = lPart.Insert(startOfVar, "*");
+                }
+                else if (Char.IsLetter(lPart[0]) && Char.IsDigit(lPart.Last()))
+                {
+                    int startOfNum = 1;
+                    while (Char.IsLetter(lPart[startOfNum]))
+                    {
+                        if (startOfNum + 1 < lPart.Length)
+                            startOfNum++;
+                    }
+                    lPart = lPart.Insert(startOfNum, "*");
+                }
+
+                else if (!lPart.StartsWith("\\"))
+                {
+                    // Do nothing, but skip the branches that check for LaTeX commands
+                }
+                else if (lPart.StartsWith(@"\,") || lPart.StartsWith(@"\:") || lPart.StartsWith(@"\;") ||
+                    lPart.StartsWith(@"\,") || lPart.StartsWith(@"\ "))
+                {
+                    // Replace the LaTeX command with a space
+                    lPart = " " + lPart.Remove(0, 2);
+                }
+                else if (lPart.StartsWith(@"\quad"))
+                {
+                    lPart = "  " + lPart.Remove(0, @"\quad".Length);
+                }
+                else if (lPart.StartsWith(@"\qquad"))
+                {
+                    lPart = "   " + lPart.Remove(0, @"\qquad".Length);
+                }
+                else if (lPart.StartsWith(@"\cdot"))
                 {
                     lPart = lPart.Replace(@"\cdot", "*");
                 }
@@ -54,10 +93,10 @@ namespace SymbolabUWP.Lib
                     {
                         // Get the variable to derive with respect to
                         string varName = Regex.Match(parameters[1], @"d(\S)$").Value.Substring(1);
-                        var varWRT = new VariableEntity(varName);
+                        var varWRT = MathS.Var(varName);
 
-                        // Derive the function
-                        var derFunc = MathS.FromString(parameters[2]).Derive(varWRT);
+                        // Derive the function with respect to varWRT
+                        var derFunc = MathS.FromString(parameters[2], true).Differentiate(varWRT);
                         lPart = derFunc.Simplify().ToString();
                     }
                     else
@@ -76,37 +115,46 @@ namespace SymbolabUWP.Lib
                     var parameters = ParseParameters(lPart);
                     if (parameters.Count == 3)
                     {
-                        // Get the expression to integrate and prepare for AngouriMath
-                        string math = ConvertToAngouriMathString(parameters[2]);
+                        string expression = parameters[2];
 
                         // Get the variable to integrate with respect to
-                        var varName = Regex.Match(parameters[2], @"d(\S)$").Value.Substring(1);
-                        var varWRT = new VariableEntity(varName);
+                        string varName = Regex.Match(expression, @"d(\S)$").Value;
+                        if (!String.IsNullOrEmpty(varName))
+                        {
+                            expression = expression.Replace(varName, String.Empty);
+                            varName = varName.Substring(1);
+                        }
+                        else
+                            varName = "x";
+                        var varWRT = MathS.Var(varName);
 
                         // TODO: Support expressions for start and end
                         // Get start and end of interval
                         double start = Double.Parse(parameters[0]);
                         double end = Double.Parse(parameters[1]);
 
-                        var intFunc = MathS.FromString(
-                            math.Substring(0, math.Length - varName.Length - 1)
-                        ).DefiniteIntegral(
-                            varWRT,
-                            new AngouriMath.Core.Number(start),
-                            new AngouriMath.Core.Number(end)
-                        );
-                        lPart = intFunc.ToString();
+                        var intFunc = MathS.FromString(expression).Integrate(varWRT);
+                        lPart = (intFunc.Substitute(varWRT, end) - intFunc.Substitute(varWRT, start)).Simplify().ToString();
                     }
-                    else
+                    else if (parameters.Count == 1)
                     {
-                        // Get the expression to integrate and prepare for AngouriMath
-                        string math = ConvertToAngouriMathString(
-                            lPart.Remove(0, @"\int".Length).Remove(m.Value.Length - 2)
-                        );
-                        var expr = MathS.FromString(math);
-                        throw new NotImplementedException("AngouriMath does not support indefinite integrals yet");
+                        string expression = parameters[0];
+
+                        // Get the variable to integrate with respect to
+                        string varName = Regex.Match(expression, @"d(\S)$").Value;
+                        if (!String.IsNullOrEmpty(varName))
+                        {
+                            expression = expression.Replace(varName, String.Empty);
+                            varName = varName.Substring(1);
+                        }
+                        else
+                            varName = "x";
+                        var varWRT = MathS.Var(varName);
+
+                        lPart = MathS.FromString(expression).Integrate(varWRT).Simplify().ToString();
                     }
                 }
+
                 output += lPart;
             }
             return output;

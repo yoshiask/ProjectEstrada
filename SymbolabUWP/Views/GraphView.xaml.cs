@@ -69,9 +69,9 @@ namespace SymbolabUWP.Views
         {
             return new Vector2(x, func(x));
         }
-        private Vector2 Evaluate(float x, Entity func, VariableEntity varEn)
+        private Vector2 Evaluate(float x, Entity func, Entity.Variable varEn)
         {
-            return new Vector2(x, -(float)func.Substitute(varEn, x).Eval().Re);
+            return new Vector2(x, -(float)func.Substitute(varEn, x).EvalNumerical().ToNumerics().Real);
         }
 
         private void GraphCanvas_Draw(CanvasControl sender, CanvasDrawEventArgs args)
@@ -95,7 +95,7 @@ namespace SymbolabUWP.Views
             );
 
             // Parse the supplied function
-            VariableEntity vari;
+            Entity.Variable vari;
             Entity func;
             Entity funcD1; // First derivative of func
             Entity funcD2; // Second derivative of func
@@ -109,16 +109,16 @@ namespace SymbolabUWP.Views
                 string formula = match.Groups["formula"].Value;
 
                 vari = MathS.Var(variable);
-                func = Lib.ParseLaTeX.ParseExpression(formula);
-                funcD1 = func.Derive(vari).Simplify();
-                funcD2 = funcD1.Derive(vari).Simplify();
+                func = MathS.FromString(formula);
+                funcD1 = func.Differentiate(vari).Simplify();
+                funcD2 = funcD1.Differentiate(vari).Simplify();
             }
             else
             {
                 vari = MathS.Var("x");
                 func = MathS.FromString(FormulaText);
-                funcD1 = func.Derive(vari).Simplify();
-                funcD2 = funcD1.Derive(vari).Simplify();
+                funcD1 = func.Differentiate(vari).Simplify();
+                funcD2 = funcD1.Differentiate(vari).Simplify();
             }
 
             var offset = new Vector2(xOffset, yOffset);

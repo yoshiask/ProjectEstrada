@@ -1,6 +1,4 @@
-﻿using CSharpMath.Rendering.BackEnd;
-using Microsoft.Toolkit.Uwp.UI.Helpers;
-using Windows.UI.Xaml;
+﻿using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 
@@ -13,20 +11,13 @@ namespace SymbolabUWP.Controls
         public LatexCanvas()
         {
             this.InitializeComponent();
+            RegisterCallbacks();
         }
         public LatexCanvas(string latexString)
         {
             InitializeComponent();
             LaTeXString = latexString;
-
-            // Register callbacks to redraw the canvas when
-            // the visual properties are changed
-            RegisterPropertyChangedCallback(BackgroundProperty,
-                new DependencyPropertyChangedCallback((obj, pr) => Canvas.Invalidate()));
-            RegisterPropertyChangedCallback(ForegroundProperty,
-                new DependencyPropertyChangedCallback((obj, pr) => Canvas.Invalidate()));
-            RegisterPropertyChangedCallback(FontSizeProperty,
-                new DependencyPropertyChangedCallback((obj, pr) => Canvas.Invalidate()));
+            RegisterCallbacks();
         }
 
         private void Canvas_PaintSurface(object sender, SkiaSharp.Views.UWP.SKPaintSurfaceEventArgs e)
@@ -69,12 +60,27 @@ namespace SymbolabUWP.Controls
 
         public string LaTeXString {
             get => (string)GetValue(LaTeXStringProperty);
-            set {
-                SetValue(LaTeXStringProperty, value);
-                Canvas.Invalidate();
-            }
+            set => SetValue(LaTeXStringProperty, value);
         }
         public static readonly DependencyProperty LaTeXStringProperty =
-            DependencyProperty.Register(nameof(LaTeXString), typeof(string), typeof(LatexCanvas), null);
+            DependencyProperty.Register(nameof(LaTeXString), typeof(string), typeof(LatexCanvas), new PropertyMetadata(""));
+
+        private void RegisterCallbacks()
+        {
+            // Register callbacks to redraw the canvas when
+            // the visual properties are changed
+
+            var dpcc = new DependencyPropertyChangedCallback(InvalidateCanvas);
+
+            RegisterPropertyChangedCallback(BackgroundProperty, dpcc);
+            RegisterPropertyChangedCallback(ForegroundProperty, dpcc);
+            RegisterPropertyChangedCallback(FontSizeProperty, dpcc);
+            RegisterPropertyChangedCallback(LaTeXStringProperty, dpcc);
+        }
+
+        private void InvalidateCanvas(DependencyObject obj, DependencyProperty dp)
+        {
+            Canvas.Invalidate();
+        }
     }
 }

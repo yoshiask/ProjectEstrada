@@ -21,7 +21,7 @@ namespace SymbolabUWP
 
             Window.Current.SetTitleBar(TitlebarGrid);
 
-            Lib.MathUtils.FindVerticalAsymptotes("x", "x");
+            Lib.MathUtils.FindVerticalAsymptotes("1/x", "x");
         }
 
         private void Text_Click(object sender, RoutedEventArgs e)
