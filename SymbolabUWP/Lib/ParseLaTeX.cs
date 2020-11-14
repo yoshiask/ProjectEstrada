@@ -23,7 +23,7 @@ namespace SymbolabUWP.Lib
                 if (lPart.Length == 0)
                     continue;
 
-                if (Char.IsDigit(lPart[0]) && Char.IsLetter(lPart.Last()))
+                if (Char.IsDigit(lPart[0]) && Char.IsLetter(lPart.Last()) && lPart.All(c => Char.IsLetterOrDigit(c)))
                 {
                     int startOfVar = 1;
                     while (Char.IsDigit(lPart[startOfVar]))
@@ -33,7 +33,7 @@ namespace SymbolabUWP.Lib
                     }
                     lPart = lPart.Insert(startOfVar, "*");
                 }
-                else if (Char.IsLetter(lPart[0]) && Char.IsDigit(lPart.Last()))
+                else if (Char.IsLetter(lPart[0]) && Char.IsDigit(lPart.Last()) && lPart.All(c => Char.IsLetterOrDigit(c)))
                 {
                     int startOfNum = 1;
                     while (Char.IsLetter(lPart[startOfNum]))

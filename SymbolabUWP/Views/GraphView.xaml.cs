@@ -7,6 +7,9 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 using System.Text.RegularExpressions;
 using AngouriMath;
+using System.Collections.Generic;
+using System.Linq;
+using System.Diagnostics;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -22,20 +25,72 @@ namespace SymbolabUWP.Views
             get {
                 return _formula;
             }
-            set {
+            set
+            {
                 _formula = value;
+                Match match = Regex.Match(value, @"(?<fname>\S+)\((?<variable>\S+)\)\s*=+\s*(?<formula>[\S\s]+)", RegexOptions.Singleline);
+                if (match.Success)
+                {
+                    string fname = match.Groups["fname"].Value;
+                    string variable = match.Groups["variable"].Value;
+                    string formula = match.Groups["formula"].Value;
+
+                    Variable = MathS.Var(variable);
+                    Function = MathS.FromString(formula);
+                }
+                else
+                {
+                    Variable = MathS.Var("x");
+                    Function = MathS.FromString(value);
+                }
+
                 Bindings.Update();
             }
         }
+
+        string _formulaLaTeX;
         private string FormulaLaTeX {
-            get {
-                return _formula;
-            }
+            get => _formulaLaTeX;
             set {
-                _formula = value;
+                _formulaLaTeX = value;
                 Bindings.Update();
             }
         }
+
+        private Entity _function;
+        private Entity _functionFirst;
+        private Entity Function
+        {
+            get => _function;
+            set
+            {
+                _function = value;
+                FunctionFirst = value.Differentiate(Variable).Simplify();
+
+                // Get a list of intervals that are continuous
+                // TODO: Do holes need to be handled as well?
+                VerticalAsymptotes = Lib.MathUtils.FindVerticalAsymptotes(value, Variable).OrderBy(d => d).ToList();
+                VerticalAsymptotes.Insert(0, double.MinValue);
+                VerticalAsymptotes.Add(double.MaxValue);
+                Intervals = Lib.MathUtils.AdjacentPairs(VerticalAsymptotes).ToArray();
+            }
+        }
+        private Entity FunctionFirst
+        {
+            get => _functionFirst;
+            set
+            {
+                _functionFirst = value;
+                FunctionSecond = value.Differentiate(Variable).Simplify();
+            }
+        }
+        private Entity FunctionSecond { get; set; }
+
+        private Entity.Variable Variable { get; set; }
+
+        private IList<double> VerticalAsymptotes;
+
+        private IList<Tuple<double, double>> Intervals = new List<Tuple<double, double>>();
 
         public GraphView()
         {
@@ -51,13 +106,6 @@ namespace SymbolabUWP.Views
                 FormulaText = Lib.ParseLaTeX.ConvertToAngouriMathString(FormulaLaTeX);
             }
             base.OnNavigatedTo(e);
-        }
-
-        private float SinFunc(float x)
-        {
-            return (float)(
-                25 * Math.Sin(x/15) * Math.Cos(x/3)
-            );
         }
 
         private float AnimOffset(float x)
@@ -94,59 +142,38 @@ namespace SymbolabUWP.Views
                 Colors.Gray, 5
             );
 
-            // Parse the supplied function
-            Entity.Variable vari;
-            Entity func;
-            Entity funcD1; // First derivative of func
-            Entity funcD2; // Second derivative of func
-            Match match = Regex.Match(FormulaText,
-                @"(?<fname>\S+)\((?<variable>\S+)\)\s*=+\s*(?<formula>[\S\s]+)",
-                RegexOptions.IgnoreCase | RegexOptions.Singleline);
-            if (match.Success)
-            {
-                string fname = match.Groups["fname"].Value;
-                string variable = match.Groups["variable"].Value;
-                string formula = match.Groups["formula"].Value;
-
-                vari = MathS.Var(variable);
-                func = MathS.FromString(formula);
-                funcD1 = func.Differentiate(vari).Simplify();
-                funcD2 = funcD1.Differentiate(vari).Simplify();
-            }
-            else
-            {
-                vari = MathS.Var("x");
-                func = MathS.FromString(FormulaText);
-                funcD1 = func.Differentiate(vari).Simplify();
-                funcD2 = funcD1.Differentiate(vari).Simplify();
-            }
-
             var offset = new Vector2(xOffset, yOffset);
-            var pathBuilder = new CanvasPathBuilder(args.DrawingSession);
-            pathBuilder.BeginFigure(-xOffset, SinFunc(-xOffset) + yOffset);
-            for (float x = -xOffset; x < xOffset; x++)
+            foreach (Tuple<double, double> interval in Intervals)
             {
-                try
+                float x_min = (float)Math.Max(interval.Item1 + 1, -xOffset);
+                float x_max = (float)Math.Min(interval.Item2, xOffset);
+
+                var pathBuilder = new CanvasPathBuilder(args.DrawingSession);
+                pathBuilder.BeginFigure(Evaluate(x_min, Function, Variable));
+                for (float x = x_min; x < x_max; x++)
                 {
-                    pathBuilder.AddLine(
-                        Evaluate(x, func, vari) + offset
-                    );
+                    try
+                    {
+                        pathBuilder.AddLine(
+                            Evaluate(x, Function, Variable) + offset
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        pathBuilder.AddLine(offset);
+                    }
+                    //pathBuilder.AddLine(new Vector2(
+                    //    x + xOffset,
+                    //    SinFunc(AnimOffset(x)) + yOffset
+                    //));
                 }
-                catch (Exception ex)
-                {
-                    pathBuilder.AddLine(offset);
-                }
-                //pathBuilder.AddLine(new Vector2(
-                //    x + xOffset,
-                //    SinFunc(AnimOffset(x)) + yOffset
-                //));
+                pathBuilder.EndFigure(CanvasFigureLoop.Open);
+                args.DrawingSession.DrawGeometry(
+                    CanvasGeometry.CreatePath(pathBuilder),
+                    Colors.White,
+                    5
+                );
             }
-            pathBuilder.EndFigure(CanvasFigureLoop.Open);
-            args.DrawingSession.DrawGeometry(
-                CanvasGeometry.CreatePath(pathBuilder),
-                Colors.White,
-                5
-            );
 
             args.DrawingSession.Flush();
         }
