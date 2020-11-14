@@ -6,17 +6,23 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:canv="using:Microsoft.Graphics.Canvas.UI.Xaml"
+    xmlns:controls="using:SymbolabUWP.Controls"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="3*"/>
         </Grid.RowDefinitions>
 
-        <TextBox x:Name="EquationBox" IsReadOnly="True"
-                 Text="{x:Bind FormulaText, Mode=TwoWay}" Grid.Row="0"/>
+        <!--<TextBox x:Name="EquationBox" IsReadOnly="True"
+                 Text="{x:Bind FormulaLaTeX, Mode=TwoWay}" Grid.Row="0"/>-->
+        <controls:LatexCanvas LaTeXString="{x:Bind FormulaLaTeX, Mode=TwoWay}"
+                              Background="{ThemeResource AppBarBackgroundThemeBrush}"
+                              Foreground="{ThemeResource DefaultTextForegroundThemeBrush}"
+                              FontSize="30"/>
+        <Rectangle VerticalAlignment="Bottom" Height="1" Fill="{ThemeResource SystemAccentColor}"/>
         <canv:CanvasControl x:Name="GraphCanvas" Grid.Row="1" Draw="GraphCanvas_Draw" />
     </Grid>
 </Page>

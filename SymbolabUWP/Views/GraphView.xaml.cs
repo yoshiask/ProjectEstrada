@@ -42,6 +42,7 @@ namespace SymbolabUWP.Views
                     Variable = MathS.Var("x");
                     Function = MathS.FromString(value);
                 }
+                FormulaLaTeX = Function.Latexise();
 
                 Bindings.Update();
             }
