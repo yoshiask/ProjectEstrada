@@ -36,7 +36,7 @@ namespace SymbolabUWP.Controls
             }
             SkiaSharp.SKColor textColor = new SkiaSharp.SKColor(r, g, b, a);
 
-            // Handle the text color
+            // Handle the background color
             r = 255; g = 255; b = 255; a = 255;
             if (Background is SolidColorBrush)
             {
