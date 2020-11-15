@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using Windows.ApplicationModel.Core;
 using Windows.UI.Core;
 using Windows.UI.ViewManagement;
@@ -20,8 +19,6 @@ namespace SymbolabUWP
             this.InitializeComponent();
 
             Window.Current.SetTitleBar(TitlebarGrid);
-
-            Lib.MathUtils.FindVerticalAsymptotes("x", "x");
         }
 
         private void Text_Click(object sender, RoutedEventArgs e)

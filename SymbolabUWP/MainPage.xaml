@@ -6,139 +6,84 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:SymbolabUWP.Controls"
-    xmlns:ribbon="using:SymbolabUWP.Controls.Ribbon"
     xmlns:winui="using:Microsoft.UI.Xaml.Controls"
     xmlns:toolkit="using:Microsoft.Toolkit.Uwp.UI.Controls"
-    xmlns:math="using:CSharpMath.Uno"
-    xmlns:animations="using:Microsoft.Toolkit.Uwp.UI.Animations"
-    xmlns:win1809="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
     
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="175px"/>
+            <RowDefinition Height="32"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <toolkit:TabView Template="{StaticResource TabViewRibbonTemplate}"
-                     CanDragItems="False" CanCloseTabs="False">
+        <Grid Grid.Row="0" Background="{ThemeResource SystemControlChromeMediumLowAcrylicWindowMediumBrush}">
+            <TextBlock Text="LaTeX Notepad" VerticalAlignment="Center" Foreground="White"
+                       HorizontalTextAlignment="Center" HorizontalAlignment="Center" Margin="5"/>
 
-            <toolkit:TabView.Resources>
-                <Style TargetType="toolkit:TabViewItem">
-                    <Setter Property="Foreground" Value="{ThemeResource MediaTextThemeBrush}"/>
+            <toolkit:DockPanel LastChildFill="True">
+                <toolkit:DockPanel.Resources>
+                    <Style TargetType="Button" BasedOn="{StaticResource ButtonRevealStyle}">
+                        <Setter Property="RequestedTheme" Value="Dark"/>
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="CornerRadius" Value="0"/>
+                    </Style>
+                </toolkit:DockPanel.Resources>
+
+                <Button>
+                    <SymbolIcon Symbol="Save"/>
+                </Button>
+                <Button>
+                    <SymbolIcon Symbol="Undo"/>
+                </Button>
+                <Button>
+                    <SymbolIcon Symbol="Redo"/>
+                </Button>
+
+                <Grid x:Name="TitlebarGrid" Background="Transparent"/>
+            </toolkit:DockPanel>
+        </Grid>
+
+        <toolkit:TabbedCommandBar Grid.Row="1" Background="{ThemeResource SystemControlChromeMediumLowAcrylicWindowMediumBrush}"
+                                  ContentBackground="{ThemeResource SystemControlChromeLowAcrylicWindowBrush}">
+            <toolkit:TabbedCommandBar.Resources>
+                <Style TargetType="toolkit:TabbedCommandBarItem">
+                    <Setter Property="Background" Value="{ThemeResource SystemControlChromeLowAcrylicWindowBrush}"/>
                 </Style>
-                <Style x:Key="RibbonSeparator" TargetType="Border">
-                    <Setter Property="BorderBrush" Value="{ThemeResource AppBarSeparatorForegroundThemeBrush}"/>
-                    <Setter Property="Width" Value="1"/>
-                    <Setter Property="BorderThickness" Value="1"/>
-                    <Setter Property="Margin" Value="5"/>
-                </Style>
-                <Style x:Key="RibbonGroupHeader" TargetType="TextBlock" BasedOn="{StaticResource CaptionTextBlockStyle}">
-                    <Setter Property="toolkit:DockPanel.Dock" Value="Bottom"/>
-                    <Setter Property="Margin" Value="0,0,0,10"/>
-                    <Setter Property="HorizontalAlignment" Value="Center"/>
-                </Style>
-            </toolkit:TabView.Resources>
-
-            <toolkit:TabView.Header>
-                <Grid>
-                    <TextBlock Text="LaTeX Notepad" VerticalAlignment="Center" Foreground="White"
-                           HorizontalTextAlignment="Center" HorizontalAlignment="Center"
-                           Margin="5"/>
-
-                    <toolkit:DockPanel Padding="-5" LastChildFill="True">
-                        <toolkit:DockPanel.Resources>
-                            <Style TargetType="Button" BasedOn="{StaticResource ButtonRevealStyle}">
-                                <Setter Property="RequestedTheme" Value="Dark"/>
-                                <Setter Property="Background" Value="Transparent"/>
-                                <!--<win1809:Setter Property="CornerRadius" Value="0"/>-->
-                            </Style>
-                        </toolkit:DockPanel.Resources>
-
-                        <Button>
-                            <SymbolIcon Symbol="Save"/>
-                        </Button>
-                        <Button>
-                            <SymbolIcon Symbol="Undo"/>
-                        </Button>
-                        <Button>
-                            <SymbolIcon Symbol="Redo"/>
-                        </Button>
-
-                        <Grid x:Name="TitlebarGrid" Background="Transparent"/>
-                    </toolkit:DockPanel>
-                </Grid>
-            </toolkit:TabView.Header>
-
-            <toolkit:TabViewItem Header="Home">
-                <StackPanel Orientation="Horizontal">
-                    <toolkit:DockPanel>
-                        <Border Style="{StaticResource RibbonSeparator}" toolkit:DockPanel.Dock="Right"/>
-                        <TextBlock Text="Clipboard" Style="{StaticResource RibbonGroupHeader}"/>
-
-                        <AppBarButton Icon="Paste" Label="Paste"
-                                  Style="{ThemeResource AppBarButtonRevealStyle}"/>
-                        <StackPanel>
-                            <AppBarButton Icon="Cut" LabelPosition="Collapsed" IsCompact="True"
-                                  Style="{ThemeResource AppBarButtonRevealStyle}"/>
-                            <AppBarButton Icon="Copy" LabelPosition="Collapsed" IsCompact="True"
-                                  Style="{ThemeResource AppBarButtonRevealStyle}"/>
-                            <AppBarButton LabelPosition="Collapsed" IsCompact="True"
-                                  Style="{ThemeResource AppBarButtonRevealStyle}">
-                                <AppBarButton.Icon>
-                                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xEB3C;" />
-                                </AppBarButton.Icon>
-                            </AppBarButton>
-                        </StackPanel>
-                    </toolkit:DockPanel>
-
-                    <toolkit:DockPanel>
-                        <Border Style="{StaticResource RibbonSeparator}" toolkit:DockPanel.Dock="Right"/>
-                        <TextBlock Text="Font" Style="{StaticResource RibbonGroupHeader}"/>
-
+            </toolkit:TabbedCommandBar.Resources>
+            <toolkit:TabbedCommandBar.MenuItems>
+                <toolkit:TabbedCommandBarItem Header="Home">
+                    <AppBarButton Icon="Cut" Label="Cut"/>
+                    <AppBarButton Icon="Copy" Label="Copy"/>
+                    <AppBarButton Icon="Paste" Label="Paste"/>
+                    <AppBarSeparator/>
+                    <AppBarElementContainer>
                         <winui:NumberBox x:Name="FontSizeBox" Value="40" Minimum="1" Margin="0,5,0,5" />
+                    </AppBarElementContainer>
+                    <AppBarButton Icon="Rename" Label="Text" Click="Text_Click"/>
+                    <AppBarButton Icon="Bold" Label="Bold" Click="Bold_Click"/>
+                    <AppBarButton Icon="Italic" Label="Italic" Click="Italic_Click"/>
+                    <AppBarButton Icon="Underline" Label="Underline" Click="Underline_Click"/>
+                    <AppBarSeparator/>
+                    <AppBarButton Icon="List" Label="List"/>
+                </toolkit:TabbedCommandBarItem>
 
-                        <AppBarButton Icon="Rename" Label="Text" Click="Text_Click"
-                                      Style="{ThemeResource AppBarButtonRevealStyle}"/>
-                        <AppBarButton Icon="Bold" Label="Bold" Click="Bold_Click"
-                                      Style="{ThemeResource AppBarButtonRevealStyle}"/>
-                        <AppBarButton Icon="Italic" Label="Italic" Click="Italic_Click"
-                                      Style="{ThemeResource AppBarButtonRevealStyle}"/>
-                        <AppBarButton Icon="Underline" Label="Underline" Click="Underline_Click"
-                                      Style="{ThemeResource AppBarButtonRevealStyle}"/>
-                    </toolkit:DockPanel>
-
-                    <toolkit:DockPanel>
-                        <AppBarButton Icon="List" Label="List" Click="List_Click"
-                                      Style="{ThemeResource AppBarButtonRevealStyle}"/>
-                    </toolkit:DockPanel>
-                </StackPanel>
-            </toolkit:TabViewItem>
-
-            <toolkit:TabViewItem Header="Draw">
-                <StackPanel Orientation="Horizontal">
-                    <toolkit:DockPanel>
-                        <Border Style="{StaticResource RibbonSeparator}" toolkit:DockPanel.Dock="Right"/>
-                        <TextBlock Text="Graphing" Style="{StaticResource RibbonGroupHeader}"/>
-
-                        <AppBarButton Label="Open graph" Style="{ThemeResource AppBarButtonRevealStyle}"
-                                      Click="OpenGraph_Click">
-                            <AppBarButton.Icon>
-                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE9D2;" />
-                            </AppBarButton.Icon>
-                        </AppBarButton>
-                    </toolkit:DockPanel>
-                </StackPanel>
-            </toolkit:TabViewItem>
-
-        </toolkit:TabView>
+                <toolkit:TabbedCommandBarItem Header="Draw">
+                    <AppBarButton Label="Open graph" Click="OpenGraph_Click">
+                        <AppBarButton.Icon>
+                            <FontIcon Glyph="&#xE9D2;" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
+                </toolkit:TabbedCommandBarItem>
+            </toolkit:TabbedCommandBar.MenuItems>
+        </toolkit:TabbedCommandBar>
 
         <TextBox x:Name="TextInput" PlaceholderText="Insert equation here"
-                 TextWrapping="Wrap" AcceptsReturn="True" Grid.Row="1"/>
+                 TextWrapping="Wrap" AcceptsReturn="True" Grid.Row="2" CornerRadius="0"/>
 
-        <controls:LatexCanvas LaTeXString="{x:Bind TextInput.Text, Mode=OneWay}" Grid.Row="2"
+        <controls:LatexCanvas LaTeXString="{x:Bind TextInput.Text, Mode=OneWay}" Grid.Row="3"
                               Background="{ThemeResource AppBarBackgroundThemeBrush}"
                               Foreground="{ThemeResource DefaultTextForegroundThemeBrush}"
                               FontSize="{x:Bind FontSizeBox.Value, Mode=OneWay}"/>

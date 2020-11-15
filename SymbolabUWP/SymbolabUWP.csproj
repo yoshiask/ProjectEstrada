@@ -12,8 +12,8 @@
     <AssemblyName>SymbolabUWP</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
-    <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.18362.0</TargetPlatformVersion>
-    <TargetPlatformMinVersion>10.0.16299.0</TargetPlatformMinVersion>
+    <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.19041.0</TargetPlatformVersion>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -126,9 +126,6 @@
     <Compile Include="Controls\LatexCanvas.xaml.cs">
       <DependentUpon>LatexCanvas.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\Ribbon\RibbonControl.xaml.cs">
-      <DependentUpon>RibbonControl.xaml</DependentUpon>
-    </Compile>
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -164,10 +161,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Controls\Ribbon\RibbonControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="MainPage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -179,43 +172,29 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AngouriMath">
-      <Version>1.0.20</Version>
+      <Version>1.2.0-preview.3</Version>
     </PackageReference>
     <PackageReference Include="CSharpMath.SkiaSharp">
-      <Version>0.4.2</Version>
+      <Version>0.5.0-beta</Version>
     </PackageReference>
     <PackageReference Include="MathNet.Symbolics">
-      <Version>0.21.0</Version>
-    </PackageReference>
-    <PackageReference Include="MathParser.org-mXparser">
-      <Version>4.4.2</Version>
+      <Version>0.22.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
-      <Version>6.2.9</Version>
+      <Version>6.2.10</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Toolkit.Uwp.UI.Controls">
-      <Version>6.0.0</Version>
+      <Version>7.0.0-build.494.g4046a63ca6</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.UI.Xaml">
-      <Version>2.4.2</Version>
+      <Version>2.5.0-prerelease.201027002</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>12.0.3</Version>
     </PackageReference>
     <PackageReference Include="SkiaSharp.Views">
-      <Version>1.68.3</Version>
+      <Version>2.80.2</Version>
     </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="BasecodeLibrary">
-      <HintPath>..\..\DotNetRussell\UWPLibrary\BasecodeLibrary\BasecodeLibrary\bin\Debug\BasecodeLibrary.dll</HintPath>
-    </Reference>
-    <Reference Include="CSharpMath.Evaluation">
-      <HintPath>..\..\CSharpMath\CSharpMath.Evaluation\bin\Debug\netstandard2.0\CSharpMath.Evaluation.dll</HintPath>
-    </Reference>
-    <Reference Include="CSharpMath.Uno">
-      <HintPath>..\..\CSharpMath\CSharpMath.Uno\bin\Debug\uap10.0.16299\CSharpMath.Uno.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
