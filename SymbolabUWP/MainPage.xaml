@@ -48,6 +48,11 @@
 
         <toolkit:TabbedCommandBar Grid.Row="1" Background="{ThemeResource SystemControlChromeMediumLowAcrylicWindowMediumBrush}"
                                   ContentBackground="{ThemeResource SystemControlChromeLowAcrylicWindowBrush}">
+            <toolkit:TabbedCommandBar.Resources>
+                <Style TargetType="toolkit:TabbedCommandBarItem">
+                    <Setter Property="Background" Value="{ThemeResource SystemControlChromeLowAcrylicWindowBrush}"/>
+                </Style>
+            </toolkit:TabbedCommandBar.Resources>
             <toolkit:TabbedCommandBar.MenuItems>
                 <toolkit:TabbedCommandBarItem Header="Home">
                     <AppBarButton Icon="Cut" Label="Cut"/>

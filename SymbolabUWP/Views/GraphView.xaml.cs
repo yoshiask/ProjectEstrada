@@ -35,12 +35,12 @@ namespace SymbolabUWP.Views
                     string formula = match.Groups["formula"].Value;
 
                     Variable = MathS.Var(variable);
-                    Function = MathS.FromString(formula);
+                    Function = MathS.FromString(formula).Simplify();
                 }
                 else
                 {
                     Variable = MathS.Var("x");
-                    Function = MathS.FromString(value);
+                    Function = MathS.FromString(value).Simplify();
                 }
                 FormulaLaTeX = Function.Latexise();
 
@@ -103,7 +103,7 @@ namespace SymbolabUWP.Views
             {
                 //EquationBox.Text = (string)e.Parameter;
                 FormulaLaTeX = (string)e.Parameter;
-                FormulaText = Lib.ParseLaTeX.ConvertToAngouriMathString(FormulaLaTeX);
+                FormulaText = Lib.ParseLaTeX.ConvertToMathString(FormulaLaTeX);
             }
             base.OnNavigatedTo(e);
         }
