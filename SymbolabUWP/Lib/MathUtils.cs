@@ -23,7 +23,7 @@ namespace SymbolabUWP.Lib
         }
         public static IEnumerable<double> FindVerticalAsymptotes(Entity func, Entity.Variable vari)
         {
-            Entity equation = (1 / func).Simplify();
+            Entity equation = (1 / func).Expand().Simplify();
             Entity.Set set = equation.SolveEquation(vari);
             return set.DirectChildren.SelectMany(e => e.DirectChildren.Append(e)).Where(e => e.EvaluableNumerical).Select(s =>
             {

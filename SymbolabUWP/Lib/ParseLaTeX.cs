@@ -88,6 +88,7 @@ namespace SymbolabUWP.Lib
 
                             // Make sure the atoms involved in the integration aren't parsed again
                             i = idxOfWRT;
+                            continue;
                         }
                         else
                         {
@@ -113,12 +114,22 @@ namespace SymbolabUWP.Lib
 
                             // Make sure the atoms involved in the integration aren't parsed again
                             i = idxOfWRT;
+                            continue;
                         }
+                    }
+                    else
+                    {
+                        output += atom.Nucleus;
                     }
                 }
                 else
                 {
                     output += atom.Nucleus;
+                }
+
+                if (atom.Superscript.Count > 0)
+                {
+                    output += $"^({ConvertToMathString(atom.Superscript)})";
                 }
             }
             return output;
