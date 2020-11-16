@@ -10,7 +10,7 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid>
+    <Grid x:Name="MainGrid">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="3*"/>
@@ -24,6 +24,7 @@
                               FontSize="30"/>
         <Rectangle VerticalAlignment="Bottom" Height="1" Fill="{ThemeResource SystemAccentColor}"/>
         <!--<canv:CanvasControl x:Name="GraphCanvas" Grid.Row="1" Draw="GraphCanvas_Draw" />-->
-        <SwapChainPanel x:Name="SwapChainPanel" Grid.Row="1" />
+        <SwapChainPanel x:Name="SwapChainPanel" Grid.Row="1" Visibility="Collapsed"/>
+        <!--<renderer:D3DPanel x:Name="DirectXPanel1" Grid.Row="1" />-->
     </Grid>
 </Page>

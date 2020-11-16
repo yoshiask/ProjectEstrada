@@ -201,6 +201,18 @@
     <PackageReference Include="Vortice.Direct3D12">
       <Version>1.8.31</Version>
     </PackageReference>
+    <PackageReference Include="Vortice.Mathematics">
+      <Version>1.2.6</Version>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\plastic.bin" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ProjectEstrada.Graphics\ProjectEstrada.Graphics.vcxproj">
+      <Project>{8baf07ae-be4c-4162-bded-812af6c7aa0d}</Project>
+      <Name>ProjectEstrada.Graphics</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

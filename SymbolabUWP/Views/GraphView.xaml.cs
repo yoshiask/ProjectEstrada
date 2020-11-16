@@ -14,6 +14,11 @@ using Vortice.DXGI;
 using Vortice.Direct3D12;
 using Vortice.Direct3D11;
 using Windows.UI.Core;
+using Vortice.Mathematics;
+using System.Threading.Tasks;
+using Windows.Storage;
+using System.IO;
+using System.Diagnostics;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -101,60 +106,7 @@ namespace SymbolabUWP.Views
         {
             this.InitializeComponent();
 
-            var nativePanel = ComObject.QueryInterface<ISwapChainPanelNative>((IInspectable)SwapChainPanel);
-            var desc = new SwapChainDescription1()
-            {
-                Width = 796,
-                Height = 420,
-                Format = Format.B8G8R8A8_UNorm,
-                Stereo = false,
-                SampleDescription = new SampleDescription(1, 0),
-                Usage = Vortice.DXGI.Usage.RenderTargetOutput,
-                BufferCount = 2,
-                Scaling = Scaling.Stretch,
-                SwapEffect = SwapEffect.FlipSequential,
-                Flags = SwapChainFlags.None
-            };
-
-            var deviceFlags = DeviceCreationFlags.BgraSupport;
-#if DEBUG
-            deviceFlags |= DeviceCreationFlags.Debug;
-#endif
-            D3D11.D3D11CreateDevice(
-                null,
-                Vortice.Direct3D.DriverType.Hardware,
-                deviceFlags,
-                new Vortice.Direct3D.FeatureLevel[]
-                {
-                    Vortice.Direct3D.FeatureLevel.Level_11_0
-                },
-                out ID3D11Device device
-            );
-
-            // QI for DXGI device
-            var dxgiDevice = device.QueryInterface<IDXGIDevice>();
-
-#if DEBUG
-            // Enable debug for the device
-            //var debug = ComObject.As<IDXGIDebug>(device);
-            //var info = ComObject.As<IDXGIInfoQueue>(debug);
-            
-#endif
-
-            // Get the DXGI adapter
-            dxgiDevice.GetAdapter(out var dxgiAdapter);
-
-            // Get the DXGI factory
-            var dxgiFactory = dxgiAdapter.GetParent<IDXGIFactory2>();
-
-            // Create a swap chain by calling CreateSwapChainForComposition
-            var swapChain = dxgiFactory.CreateSwapChainForComposition(dxgiDevice, desc);
-
-            nativePanel.SetSwapChain(swapChain);
-
-            
-
-            swapChain.Present(1, PresentFlags.Test);
+            //DrawToSwapChain();
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -166,6 +118,17 @@ namespace SymbolabUWP.Views
                 FormulaText = Lib.ParseLaTeX.ConvertToMathString(FormulaLaTeX);
             }
             base.OnNavigatedTo(e);
+
+            var d3dPanel = new ProjectEstrada_Graphics.D3DPanel();
+            d3dPanel.StartRenderLoop();
+
+            MainGrid.Children.Add(d3dPanel);
+            Grid.SetRow(d3dPanel, 1);
+        }
+
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            base.OnNavigatedFrom(e);
         }
 
         private float AnimOffset(float x)
@@ -190,17 +153,17 @@ namespace SymbolabUWP.Views
             float xOffset = width / 2;
 
             // Draw x-axis
-            args.DrawingSession.DrawLine(
-                new Vector2(0, yOffset),
-                new Vector2(width, yOffset),
-                Colors.Gray, 5
-            );
-            // Draw y-axis
-            args.DrawingSession.DrawLine(
-                new Vector2(xOffset, 0),
-                new Vector2(xOffset, height),
-                Colors.Gray, 5
-            );
+            //args.DrawingSession.DrawLine(
+            //    new Vector2(0, yOffset),
+            //    new Vector2(width, yOffset),
+            //    Colors.Gray, 5
+            //);
+            //// Draw y-axis
+            //args.DrawingSession.DrawLine(
+            //    new Vector2(xOffset, 0),
+            //    new Vector2(xOffset, height),
+            //    Colors.Gray, 5
+            //);
 
             var offset = new Vector2(xOffset, yOffset);
             foreach (Tuple<double, double> interval in Intervals)
@@ -228,14 +191,126 @@ namespace SymbolabUWP.Views
                     //));
                 }
                 pathBuilder.EndFigure(CanvasFigureLoop.Open);
-                args.DrawingSession.DrawGeometry(
-                    CanvasGeometry.CreatePath(pathBuilder),
-                    Colors.White,
-                    5
-                );
+                //args.DrawingSession.DrawGeometry(
+                //    CanvasGeometry.CreatePath(pathBuilder),
+                //    Colors.White,
+                //    5
+                //);
             }
 
             args.DrawingSession.Flush();
+        }
+
+        private struct PCVertex
+        {
+            public Point3 Position;
+            public Point3 Color;
+        }
+
+        private void DrawToSwapChain()
+        {
+            var nativePanel = ComObject.QueryInterface<ISwapChainPanelNative>((IInspectable)SwapChainPanel);
+            var desc = new SwapChainDescription1()
+            {
+                Width = 796,
+                Height = 420,
+                Format = Format.B8G8R8A8_UNorm,
+                Stereo = false,
+                SampleDescription = new SampleDescription(1, 0),
+                Usage = Vortice.DXGI.Usage.RenderTargetOutput,
+                BufferCount = 2,
+                Scaling = Scaling.Stretch,
+                SwapEffect = SwapEffect.FlipSequential,
+                Flags = SwapChainFlags.None
+            };
+
+            var deviceFlags = DeviceCreationFlags.BgraSupport;
+#if DEBUG
+            deviceFlags |= DeviceCreationFlags.Debug;
+#endif
+            D3D11.D3D11CreateDevice(
+                null,
+                Vortice.Direct3D.DriverType.Hardware,
+                deviceFlags,
+                new Vortice.Direct3D.FeatureLevel[]
+                {
+                    Vortice.Direct3D.FeatureLevel.Level_11_0
+                },
+                out ID3D11Device device,
+                out ID3D11DeviceContext context
+            );
+
+            // QI for DXGI device
+            var dxgiDevice = device.QueryInterface<IDXGIDevice>();
+
+#if DEBUG
+            // Enable debug for the device
+            //var debug = ComObject.As<IDXGIDebug>(device);
+            //var info = ComObject.As<IDXGIInfoQueue>(debug);
+
+#endif
+
+            // Get the DXGI adapter
+            dxgiDevice.GetAdapter(out var dxgiAdapter);
+
+            // Get the DXGI factory
+            var dxgiFactory = dxgiAdapter.GetParent<IDXGIFactory2>();
+
+            // Create a swap chain by calling CreateSwapChainForComposition
+            var swapChain = dxgiFactory.CreateSwapChainForComposition(dxgiDevice, desc);
+
+            nativePanel.SetSwapChain(swapChain);
+
+            context.IASetPrimitiveTopology(Vortice.Direct3D.PrimitiveTopology.PointList);
+
+            var elementDesc = new Vortice.Direct3D11.InputElementDescription[]
+            {
+                new Vortice.Direct3D11.InputElementDescription()
+                {
+                    SemanticName = "POSITION",
+                    Format = Format.R32G32B32_Float,
+                    Classification = Vortice.Direct3D11.InputClassification.PerVertexData
+                }
+            };
+
+            var mesh = new PCVertex[]
+            {
+                new PCVertex()
+                {
+                    Position = new Point3(-1, -1, -1),
+                    Color = new Point3(0, 0, 0)
+                },
+                new PCVertex()
+                {
+                    Position = new Point3(-1, -1, 1),
+                    Color = new Point3(0, 0, 255)
+                },
+                new PCVertex()
+                {
+                    Position = new Point3(-1, 1, -1),
+                    Color = new Point3(0, 255, 0)
+                },
+            };
+
+            //var shader = await LoadShader();
+
+            try
+            {
+                var inputLayout = device.CreateInputLayout(elementDesc, new byte[] { });
+            }
+            catch (SharpGenException ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
+
+            swapChain.Present(1, PresentFlags.Test);
+        }
+
+        private async Task<byte[]> LoadShader()
+        {
+            StorageFolder InstallationFolder = Windows.ApplicationModel.Package.Current.InstalledLocation;
+            StorageFile file = await InstallationFolder.GetFileAsync(@"Views\plastic.bin");
+            return await File.ReadAllBytesAsync(file.Path);
         }
     }
 }
