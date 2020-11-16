@@ -23,6 +23,7 @@
                               Foreground="{ThemeResource DefaultTextForegroundThemeBrush}"
                               FontSize="30"/>
         <Rectangle VerticalAlignment="Bottom" Height="1" Fill="{ThemeResource SystemAccentColor}"/>
-        <canv:CanvasControl x:Name="GraphCanvas" Grid.Row="1" Draw="GraphCanvas_Draw" />
+        <!--<canv:CanvasControl x:Name="GraphCanvas" Grid.Row="1" Draw="GraphCanvas_Draw" />-->
+        <SwapChainPanel x:Name="SwapChainPanel" Grid.Row="1" />
     </Grid>
 </Page>

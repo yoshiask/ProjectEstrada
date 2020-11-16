@@ -9,6 +9,11 @@ using System.Text.RegularExpressions;
 using AngouriMath;
 using System.Collections.Generic;
 using System.Linq;
+using SharpGen.Runtime;
+using Vortice.DXGI;
+using Vortice.Direct3D12;
+using Vortice.Direct3D11;
+using Windows.UI.Core;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -95,6 +100,61 @@ namespace SymbolabUWP.Views
         public GraphView()
         {
             this.InitializeComponent();
+
+            var nativePanel = ComObject.QueryInterface<ISwapChainPanelNative>((IInspectable)SwapChainPanel);
+            var desc = new SwapChainDescription1()
+            {
+                Width = 796,
+                Height = 420,
+                Format = Format.B8G8R8A8_UNorm,
+                Stereo = false,
+                SampleDescription = new SampleDescription(1, 0),
+                Usage = Vortice.DXGI.Usage.RenderTargetOutput,
+                BufferCount = 2,
+                Scaling = Scaling.Stretch,
+                SwapEffect = SwapEffect.FlipSequential,
+                Flags = SwapChainFlags.None
+            };
+
+            var deviceFlags = DeviceCreationFlags.BgraSupport;
+#if DEBUG
+            deviceFlags |= DeviceCreationFlags.Debug;
+#endif
+            D3D11.D3D11CreateDevice(
+                null,
+                Vortice.Direct3D.DriverType.Hardware,
+                deviceFlags,
+                new Vortice.Direct3D.FeatureLevel[]
+                {
+                    Vortice.Direct3D.FeatureLevel.Level_11_0
+                },
+                out ID3D11Device device
+            );
+
+            // QI for DXGI device
+            var dxgiDevice = device.QueryInterface<IDXGIDevice>();
+
+#if DEBUG
+            // Enable debug for the device
+            //var debug = ComObject.As<IDXGIDebug>(device);
+            //var info = ComObject.As<IDXGIInfoQueue>(debug);
+            
+#endif
+
+            // Get the DXGI adapter
+            dxgiDevice.GetAdapter(out var dxgiAdapter);
+
+            // Get the DXGI factory
+            var dxgiFactory = dxgiAdapter.GetParent<IDXGIFactory2>();
+
+            // Create a swap chain by calling CreateSwapChainForComposition
+            var swapChain = dxgiFactory.CreateSwapChainForComposition(dxgiDevice, desc);
+
+            nativePanel.SetSwapChain(swapChain);
+
+            
+
+            swapChain.Present(1, PresentFlags.Test);
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
