@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:SymbolabUWP.Controls"
     xmlns:winui="using:Microsoft.UI.Xaml.Controls"
-    xmlns:toolkit="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    xmlns:toolkit="using:Microsoft.Toolkit.Uwp.UI.Controls" xmlns:views="using:SymbolabUWP.Views"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
     
@@ -19,7 +19,12 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" Background="{ThemeResource SystemControlChromeMediumLowAcrylicWindowMediumBrush}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Grid Grid.Row="0" Grid.ColumnSpan="2" Background="{ThemeResource SystemControlChromeMediumLowAcrylicWindowMediumBrush}">
             <TextBlock Text="LaTeX Notepad" VerticalAlignment="Center" Foreground="White"
                        HorizontalTextAlignment="Center" HorizontalAlignment="Center" Margin="5"/>
 
@@ -46,7 +51,8 @@
             </toolkit:DockPanel>
         </Grid>
 
-        <toolkit:TabbedCommandBar Grid.Row="1" Background="{ThemeResource SystemControlChromeMediumLowAcrylicWindowMediumBrush}"
+        <toolkit:TabbedCommandBar Grid.Row="1" Grid.ColumnSpan="2" 
+                                  Background="{ThemeResource SystemControlChromeMediumLowAcrylicWindowMediumBrush}"
                                   ContentBackground="{ThemeResource SystemControlChromeLowAcrylicWindowBrush}">
             <toolkit:TabbedCommandBar.Resources>
                 <Style TargetType="toolkit:TabbedCommandBarItem">
@@ -87,5 +93,7 @@
                               Background="{ThemeResource AppBarBackgroundThemeBrush}"
                               Foreground="{ThemeResource DefaultTextForegroundThemeBrush}"
                               FontSize="{x:Bind FontSizeBox.Value, Mode=OneWay}"/>
+
+        <views:GraphView Grid.Row="2" Grid.Column="1"/>
     </Grid>
 </Page>
