@@ -5,7 +5,6 @@
     xmlns:local="using:SymbolabUWP.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:canv="using:Microsoft.Graphics.Canvas.UI.Xaml"
     xmlns:controls="using:SymbolabUWP.Controls"
     xmlns:graphics="using:ProjectEstrada.Graphics.Controls"
     mc:Ignorable="d"
@@ -24,8 +23,6 @@
                               Foreground="{ThemeResource DefaultTextForegroundThemeBrush}"
                               FontSize="30"/>
         <Rectangle VerticalAlignment="Bottom" Height="1" Fill="{ThemeResource SystemAccentColor}"/>
-        <!--<canv:CanvasControl x:Name="GraphCanvas" Grid.Row="1" Draw="GraphCanvas_Draw" />-->
-        <!--<SwapChainPanel x:Name="SwapChainPanel" Grid.Row="1" Visibility="Collapsed"/>-->
         <graphics:GLUWPControl Grid.Row="1" />
     </Grid>
 </Page>

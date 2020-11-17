@@ -198,15 +198,6 @@
     <PackageReference Include="SkiaSharp.Views">
       <Version>2.80.3-preview.18</Version>
     </PackageReference>
-    <PackageReference Include="Vortice.Direct3D11">
-      <Version>1.8.31</Version>
-    </PackageReference>
-    <PackageReference Include="Vortice.Direct3D12">
-      <Version>1.8.31</Version>
-    </PackageReference>
-    <PackageReference Include="Vortice.Mathematics">
-      <Version>1.2.6</Version>
-    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ProjectEstrada.Graphics\ProjectEstrada.Graphics.csproj">

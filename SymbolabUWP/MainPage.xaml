@@ -7,7 +7,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:SymbolabUWP.Controls"
     xmlns:winui="using:Microsoft.UI.Xaml.Controls"
-    xmlns:toolkit="using:Microsoft.Toolkit.Uwp.UI.Controls" xmlns:views="using:SymbolabUWP.Views"
+    xmlns:toolkit="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    xmlns:views="using:SymbolabUWP.Views"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
     
@@ -94,6 +95,6 @@
                               Foreground="{ThemeResource DefaultTextForegroundThemeBrush}"
                               FontSize="{x:Bind FontSizeBox.Value, Mode=OneWay}"/>
 
-        <views:GraphView Grid.Row="2" Grid.Column="1"/>
+        <views:GraphView Grid.Row="2" Grid.Column="1" Grid.RowSpan="2"/>
     </Grid>
 </Page>
