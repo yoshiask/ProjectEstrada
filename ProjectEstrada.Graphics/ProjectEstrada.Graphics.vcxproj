@@ -269,6 +269,7 @@
   <ItemGroup>
     <ClInclude Include="D2DPanel.h" />
     <ClInclude Include="D3DPanel.h" />
+    <ClInclude Include="D3DPanelDemo.h" />
     <ClInclude Include="DirectXHelper.h" />
     <ClInclude Include="DirectXPanelBase.h" />
     <ClInclude Include="DrawingPanel.h" />
@@ -279,6 +280,7 @@
   <ItemGroup>
     <ClCompile Include="D2DPanel.cpp" />
     <ClCompile Include="D3DPanel.cpp" />
+    <ClCompile Include="D3DPanelDemo.cpp" />
     <ClCompile Include="DirectXPanelBase.cpp" />
     <ClCompile Include="DrawingPanel.cpp" />
     <ClCompile Include="pch.cpp">

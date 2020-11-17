@@ -10,18 +10,18 @@
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="DirectXPanelBase.cpp" />
     <ClCompile Include="D2DPanel.cpp" />
-    <ClCompile Include="D3DPanel.cpp" />
     <ClCompile Include="DrawingPanel.cpp" />
+    <ClCompile Include="D3DPanelDemo.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="DirectXPanelBase.h" />
     <ClInclude Include="DirectXHelper.h" />
     <ClInclude Include="D2DPanel.h" />
-    <ClInclude Include="D3DPanel.h" />
     <ClInclude Include="DrawingPanel.h" />
     <ClInclude Include="ShaderStructures.h" />
     <ClInclude Include="StepTimer.h" />
+    <ClInclude Include="D3DPanelDemo.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="SimplePixelShader.hlsl" />
