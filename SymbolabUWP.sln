@@ -11,7 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Graphics", "Graphics", "{1D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectEstrada.Graphics", "ProjectEstrada.Graphics\ProjectEstrada.Graphics.csproj", "{0E2C5B9A-3AB2-4215-ADAD-B8300DFF9DA3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GLUWP", "..\..\j4m3z0r\GLUWP\GLUWP\GLUWP.csproj", "{C44C2876-313D-4BFB-A04C-5E9DA349E423}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GLUWP", "GLUWP\GLUWP.csproj", "{C44C2876-313D-4BFB-A04C-5E9DA349E423}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

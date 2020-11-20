@@ -4,15 +4,15 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{0E2C5B9A-3AB2-4215-ADAD-B8300DFF9DA3}</ProjectGuid>
+    <ProjectGuid>{C44C2876-313D-4BFB-A04C-5E9DA349E423}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ProjectEstrada.Graphics</RootNamespace>
-    <AssemblyName>ProjectEstrada.Graphics</AssemblyName>
+    <RootNamespace>GLUWP</RootNamespace>
+    <AssemblyName>GLUWP</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
-    <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.19041.0</TargetPlatformVersion>
-    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.16299.0</TargetPlatformVersion>
+    <TargetPlatformMinVersion>10.0.16299.0</TargetPlatformMinVersion>
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -43,6 +43,7 @@
     <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
     <NoWarn>;2008</NoWarn>
     <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
@@ -53,6 +54,7 @@
     <Optimize>true</Optimize>
     <NoWarn>;2008</NoWarn>
     <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
@@ -63,6 +65,7 @@
     <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
     <NoWarn>;2008</NoWarn>
     <DebugType>full</DebugType>
+    <PlatformTarget>ARM</PlatformTarget>
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
@@ -73,26 +76,7 @@
     <Optimize>true</Optimize>
     <NoWarn>;2008</NoWarn>
     <DebugType>pdbonly</DebugType>
-    <UseVSHostingProcess>false</UseVSHostingProcess>
-    <ErrorReport>prompt</ErrorReport>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|ARM64'">
-    <PlatformTarget>ARM64</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\ARM64\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
-    <NoWarn>;2008</NoWarn>
-    <DebugType>full</DebugType>
-    <UseVSHostingProcess>false</UseVSHostingProcess>
-    <ErrorReport>prompt</ErrorReport>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|ARM64'">
-    <PlatformTarget>ARM64</PlatformTarget>
-    <OutputPath>bin\ARM64\Release\</OutputPath>
-    <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
-    <Optimize>true</Optimize>
-    <NoWarn>;2008</NoWarn>
-    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>ARM</PlatformTarget>
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
@@ -103,6 +87,7 @@
     <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
     <NoWarn>;2008</NoWarn>
     <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
@@ -113,6 +98,7 @@
     <Optimize>true</Optimize>
     <NoWarn>;2008</NoWarn>
     <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
@@ -120,33 +106,25 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Controls\GLUWPControl.xaml.cs">
-      <DependentUpon>GLUWPControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="SampleRenderer.cs" />
-    <Compile Include="Helpers\MathHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="Properties\ProjectEstrada.Graphics.rd.xml" />
+    <Compile Include="Source\EGL\ANGLEWindowsStore.cs" />
+    <Compile Include="Source\EGL\EGL.cs" />
+    <Compile Include="Source\EGL\EGLExtAngle.cs" />
+    <Compile Include="Source\EGL\EGLTypes.cs" />
+    <Compile Include="Source\GLView.cs" />
+    <Compile Include="Source\GL\GL.cs" />
+    <Compile Include="Source\GL\GLDebug.cs" />
+    <Compile Include="Source\GL\GLenums.cs" />
+    <Compile Include="Source\OpenGLES.cs" />
+    <EmbeddedResource Include="Properties\GLUWP.rd.xml" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="MathNet.Numerics">
-      <Version>4.12.0</Version>
+    <PackageReference Include="ANGLE.WindowsStore">
+      <Version>2.1.13</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
-      <Version>6.2.10</Version>
+      <Version>6.1.5</Version>
     </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Include="Controls\GLUWPControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\GLUWP\GLUWP.csproj">
-      <Project>{c44c2876-313d-4bfb-a04c-5e9da349e423}</Project>
-      <Name>GLUWP</Name>
-    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
