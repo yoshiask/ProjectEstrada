@@ -127,6 +127,8 @@
       <DependentUpon>GraphControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Helpers\EventThrottler.cs" />
+    <Compile Include="Helpers\Mesh.cs" />
+    <Compile Include="MeshRenderer.cs" />
     <Compile Include="RendererBase.cs" />
     <Compile Include="SampleRenderer.cs" />
     <Compile Include="Helpers\MathHelper.cs" />
@@ -134,6 +136,9 @@
     <EmbeddedResource Include="Properties\ProjectEstrada.Graphics.rd.xml" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="AngouriMath">
+      <Version>1.2.0-preview.5</Version>
+    </PackageReference>
     <PackageReference Include="MathNet.Numerics">
       <Version>4.12.0</Version>
     </PackageReference>
@@ -156,6 +161,13 @@
       <Project>{c44c2876-313d-4bfb-a04c-5e9da349e423}</Project>
       <Name>GLUWP</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ProjectEstrada.Core\ProjectEstrada.Core.csproj">
+      <Project>{87418bfd-1ebe-4a54-951f-bff7611e2c9c}</Project>
+      <Name>ProjectEstrada.Core</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\Cube.obj" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

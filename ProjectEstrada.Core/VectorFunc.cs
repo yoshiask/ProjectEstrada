@@ -6,7 +6,7 @@ namespace ProjectEstrada.Core
 {
 	public class VectorFunc
 	{
-		Func<double, Vector> vectorFunc;
+		Func<double, NumericalVector> vectorFunc;
 
 		public int Dimension { get; internal set; }
 
@@ -14,7 +14,7 @@ namespace ProjectEstrada.Core
 		{
 			vectorFunc = (double t) =>
 			{
-				Vector r = new Vector(functions.Length);
+				NumericalVector r = new NumericalVector(functions.Length);
 				for (int i = 0; i < r.Dimension; i++)
 				{
 					r.SetComponent(i, functions[i](t));
@@ -25,13 +25,13 @@ namespace ProjectEstrada.Core
 			Dimension = functions.Length;
 		}
 
-		public VectorFunc(Func<double, Vector> function, int dim)
+		public VectorFunc(Func<double, NumericalVector> function, int dim)
 		{
 			vectorFunc = function;
 			Dimension = dim;
 		}
 
-		public Vector Evaluate(double t)
+		public NumericalVector Evaluate(double t)
 		{
 			return vectorFunc(t);
 		}
