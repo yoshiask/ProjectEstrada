@@ -23,6 +23,7 @@
                               Foreground="{ThemeResource DefaultTextForegroundThemeBrush}"
                               FontSize="30"/>
         <Rectangle VerticalAlignment="Bottom" Height="1" Fill="{ThemeResource SystemAccentColor}"/>
-        <graphics:GLUWPControl Grid.Row="1" />
+        <!--<graphics:GLUWPControl Grid.Row="1" />-->
+        <graphics:GraphControl Grid.Row="1"/>
     </Grid>
 </Page>

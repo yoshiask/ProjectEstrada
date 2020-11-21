@@ -1,4 +1,5 @@
 ﻿using GLUWP;
+using System;
 using Windows.Foundation;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
@@ -8,7 +9,7 @@ using Windows.UI.Xaml.Controls;
 
 namespace ProjectEstrada.Graphics.Controls
 {
-    public sealed partial class GLUWPControl : UserControl
+    internal sealed partial class GLUWPControl : UserControl
     {
         private OpenGLES mOpenGLES;
 
@@ -16,14 +17,21 @@ namespace ProjectEstrada.Graphics.Controls
         private object mRenderSurfaceCriticalSection = new object();
         private IAsyncAction mRenderLoopWorker;
 
-        public GLUWPControl() : this(new OpenGLES())
+        private Func<RendererBase> RendererInit;
+
+        public GLUWPControl(Func<RendererBase> rendererInit) : this(new OpenGLES(), rendererInit)
         {
         }
 
-        internal GLUWPControl(OpenGLES openGLES)
+        public GLUWPControl() : this(() => new RendererBase())
+        {
+        }
+
+        internal GLUWPControl(OpenGLES openGLES, Func<RendererBase> rendererInit)
         {
             mOpenGLES = openGLES;
             mRenderSurface = EGL.NO_SURFACE;
+            RendererInit = rendererInit;
             InitializeComponent();
 
             CoreWindow window = Window.Current.CoreWindow;
@@ -118,6 +126,13 @@ namespace ProjectEstrada.Graphics.Controls
                 return;
             }
 
+            //var throttler = new Helpers.EventThrottler<TextChangedEventArgs>(Constants.TypingTimeout, handler => SearchField.TextChanged += new TextChangedEventHandler(handler));
+            //throttler.Invoked += (s, args) =>
+            //{
+            //    // s is SearchField
+            //    // args is TextChangedEventArgs
+            //};
+
             // Create a task for rendering that will be run on a background thread.
             var workItemHandler =
                 new Windows.System.Threading.WorkItemHandler(action =>
@@ -125,7 +140,9 @@ namespace ProjectEstrada.Graphics.Controls
                     lock (mRenderSurfaceCriticalSection)
                     {
                         mOpenGLES.MakeCurrent(mRenderSurface);
-                        SampleRenderer renderer = new SampleRenderer();
+
+                        //var renderer = new RendererBase();
+                        var renderer = RendererInit();
 
                         while (action.Status == AsyncStatus.Started)
                         {
@@ -142,11 +159,13 @@ namespace ProjectEstrada.Graphics.Controls
                             if (mOpenGLES.SwapBuffers(mRenderSurface) != EGL.TRUE)
                             {
                                 // XAML objects like the SwapChainPanel must only be manipulated on the UI thread.
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
                                 swapChainPanel.Dispatcher.RunAsync(CoreDispatcherPriority.High,
                                     new DispatchedHandler(() =>
                                     {
                                         RecoverFromLostDevice();
                                     }));
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
                                 return;
                             }

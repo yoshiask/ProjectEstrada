@@ -123,6 +123,11 @@
     <Compile Include="Controls\GLUWPControl.xaml.cs">
       <DependentUpon>GLUWPControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\GraphControl.xaml.cs">
+      <DependentUpon>GraphControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Helpers\EventThrottler.cs" />
+    <Compile Include="RendererBase.cs" />
     <Compile Include="SampleRenderer.cs" />
     <Compile Include="Helpers\MathHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -138,6 +143,10 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="Controls\GLUWPControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\GraphControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
