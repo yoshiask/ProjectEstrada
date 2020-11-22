@@ -284,11 +284,11 @@ namespace ProjectEstrada.Graphics
             GL.VertexAttribPointer(mColorAttribLocation, 3, VertexAttribPointerType.Float, false, 0, 0);
 
             //var modelMatrix = MathHelper.Flatten(MathHelper.SimpleModelMatrix((float)mDrawCount / 1000.0f).ToArray());
-            var modelMatrix = MathHelper.SimpleModelMatrix(0);// (float)mDrawCount / 1000.0f);
+            var modelMatrix = MathHelper.SimpleModelMatrix((float)mDrawCount / 2000.0f);
             GL.UniformMatrix4(mModelUniformLocation, 1, false, modelMatrix.m);
 
             //var viewMatrix = MathHelper.Flatten(MathHelper.SimpleViewMatrix().ToArray());
-            var viewMatrix = MathHelper.SimpleViewMatrix();
+            var viewMatrix = MathHelper.SimpleViewMatrix((float)Math.PI / 6, 5);
             GL.UniformMatrix4(mViewUniformLocation, 1, false, viewMatrix.m);
 
             //var projectionMatrix = MathHelper.Flatten(MathHelper.SimpleProjectionMatrix((float)mWindowWidth / (float)mWindowHeight).ToArray());

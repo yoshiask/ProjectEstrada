@@ -1,5 +1,6 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
 using System;
+using System.Linq;
 
 namespace ProjectEstrada.Graphics.Helpers
 {
@@ -23,7 +24,7 @@ namespace ProjectEstrada.Graphics.Helpers
         }
     }
 
-    public class MathHelper
+    public static class MathHelper
     {
         public static Matrix4 SimpleModelMatrix(float radians)
         {
@@ -37,18 +38,27 @@ namespace ProjectEstrada.Graphics.Helpers
                   0.0f, 0.0f, 0.0f, 1.0f);
         }
 
-        public static Matrix4 SimpleViewMatrix()
+        public static Matrix4 SimpleViewMatrix(float angleInYZPlane, float cameraDistance)
         {
             // Camera is at 60 degrees to the ground, in the YZ plane.
             // Camera Look-At is hardcoded to (0, 0, 0).
             // Camera Up is hardcoded to (0, 1, 0).
+
             const float sqrt3over2 = 0.86603f;
-            const float cameraDistance = 5.0f;
 
             return new Matrix4(
                 1.0f, 0.0f, 0.0f, 0.0f,
                 0.0f, sqrt3over2, 0.5f, 0.0f,
                 0.0f, -0.5f, sqrt3over2, 0.0f,
+                0.0f, 0.0f, -cameraDistance, 1.0f);
+
+            float cosine = (float)Math.Cos(angleInYZPlane);
+            float sine = (float)Math.Sin(angleInYZPlane);
+
+            return new Matrix4(
+                1.0f, 0.0f, 0.0f, 0.0f,
+                0.0f, sine, cosine, 0.0f,
+                0.0f, -cosine, sine, 0.0f,
                 0.0f, 0.0f, -cameraDistance, 1.0f);
         }
 
@@ -56,7 +66,7 @@ namespace ProjectEstrada.Graphics.Helpers
         {
             // Far plane is at 50.0f, near plane is at 1.0f.
             // FoV is hardcoded to pi/3.
-            float cotangent = 1f / (float)Math.Tan(3.14159f / 6.0f);
+            float cotangent = 1f / (float)Math.Tan(Math.PI / 6.0f);
 
             return new Matrix4(
                 cotangent / aspectRatio, 0.0f, 0.0f, 0.0f,
@@ -124,6 +134,22 @@ namespace ProjectEstrada.Graphics.Helpers
             }
             //Buffer.BlockCopy(twoDim, 0, oneDim, 0, twoDim.Length);
             return oneDim;
+        }
+
+        /// <summary>
+        /// Returns a list of evenly-spaced numbers over a specified interval.
+        /// Equivalent to np.linspace()
+        /// </summary>
+        public static System.Collections.Generic.IEnumerable<double> LinSpace(double start, double end, int partitions)
+        {
+            return Enumerable.Range(0, partitions + 1).Select(idx => idx != partitions
+                    ? start + (end - start) / partitions * idx
+                    : end);
+        }
+
+        public static float MapRange(float x, float inMin, float inMax, float outMin, float outMax)
+        {
+            return (x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
         }
     }
 }
