@@ -1,6 +1,5 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
 using System;
-using System.Linq;
 
 namespace ProjectEstrada.Graphics.Helpers
 {
@@ -120,36 +119,5 @@ namespace ProjectEstrada.Graphics.Helpers
         //        { 0.0f,                    0.0f,      -1.0f,                   0.0f }
         //    });
         //}
-
-        public static T[] Flatten<T>(T[,] twoDim)
-        {
-            T[] oneDim = new T[twoDim.Length];
-            int stride = twoDim.GetLength(0);
-            for (int i = 0; i < stride; i++)
-            {
-                for (int j = 0; j < twoDim.GetLength(1); j++)
-                {
-                    oneDim[i + j * stride] = twoDim[i, j];
-                }
-            }
-            //Buffer.BlockCopy(twoDim, 0, oneDim, 0, twoDim.Length);
-            return oneDim;
-        }
-
-        /// <summary>
-        /// Returns a list of evenly-spaced numbers over a specified interval.
-        /// Equivalent to np.linspace()
-        /// </summary>
-        public static System.Collections.Generic.IEnumerable<double> LinSpace(double start, double end, int partitions)
-        {
-            return Enumerable.Range(0, partitions + 1).Select(idx => idx != partitions
-                    ? start + (end - start) / partitions * idx
-                    : end);
-        }
-
-        public static float MapRange(float x, float inMin, float inMax, float outMin, float outMax)
-        {
-            return (x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
-        }
     }
 }

@@ -6,7 +6,7 @@ namespace ProjectEstrada.Core.Functions
 {
     public class ScalarFunction : Function<Entity, double>, IEquatable<ScalarFunction>
     {
-        public override FunctionType Type => Inputs.Count == 1 ? FunctionType.Basic : FunctionType.Scalar;
+        public override FunctionType Type => Inputs.Count == 1 ? FunctionType.Simple : FunctionType.Scalar;
 
         public bool Equals(ScalarFunction other)
         {

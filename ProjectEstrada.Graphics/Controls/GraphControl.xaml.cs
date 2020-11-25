@@ -1,23 +1,11 @@
 ﻿using AngouriMath;
 using ProjectEstrada.Core.Functions;
-using ProjectEstrada.Graphics.Helpers;
-using System;
+using ProjectEstrada.Core.Helpers;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
 using System.Numerics;
-using System.Reflection;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -28,7 +16,7 @@ namespace ProjectEstrada.Graphics.Controls
     {
         public ObservableCollection<string> Functions { get; } = new ObservableCollection<string>();
 
-        static ScalarFunction scalar = new ScalarFunction()
+        static GenericFunction scalar = new GenericFunction()
         {
             FunctionBody = "x*y^2",
             Inputs = new List<Entity.Variable>()
@@ -41,11 +29,11 @@ namespace ProjectEstrada.Graphics.Controls
         {
             this.InitializeComponent();
 
-            var plane = Mesh.CreateSquarePlane((1f, 1f), 5);
+            var plane = Helpers.Mesh.CreateSquarePlane((1f, 1f), 5);
 
             plane.VertexPositions = plane.VertexPositions.Select(v =>
             {
-                v.Y = (float)scalar.Evaluate(v.X, v.Z);
+                v.Y = (float)scalar.Evaluate(v.X, v.Z)[0];
                 return v;
             }).ToList();
 
@@ -55,13 +43,6 @@ namespace ProjectEstrada.Graphics.Controls
             )).ToList();
 
             Content = new GLUWPControl(() => new MeshRenderer(plane));
-
-            Loaded += GraphControl_Loaded;
-        }
-
-        private void GraphControl_Loaded(object sender, RoutedEventArgs e)
-        {
-            
         }
     }
 }

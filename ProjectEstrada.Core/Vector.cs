@@ -126,7 +126,7 @@ namespace ProjectEstrada.Core
 		/// </summary>
 		public Entity GetAngleWithX()
 		{
-			return GetAngleWithAxis(0);
+			return GetAngleWithAxis((int)Constants.Axis.X);
 		}
 
 		/// <summary>
@@ -134,7 +134,7 @@ namespace ProjectEstrada.Core
 		/// </summary>
 		public Entity GetAngleWithY()
 		{
-			return GetAngleWithAxis(1);
+			return GetAngleWithAxis((int)Constants.Axis.Y);
 		}
 
 		/// <summary>
@@ -142,7 +142,7 @@ namespace ProjectEstrada.Core
 		/// </summary>
 		public Entity GetAngleWithZ()
 		{
-			return GetAngleWithAxis(2);
+			return GetAngleWithAxis((int)Constants.Axis.Z);
 		}
 
 		//
@@ -165,13 +165,9 @@ namespace ProjectEstrada.Core
 		public static void MakeSameDimension(Vector a, Vector b)
 		{
 			if (a.Dimension >= b.Dimension)
-			{
 				b.SetDimension(a.Dimension);
-			}
 			if (b.Dimension < a.Dimension)
-			{
 				a.SetDimension(b.Dimension);
-			}
 		}
 
 		/// <summary>
@@ -186,13 +182,9 @@ namespace ProjectEstrada.Core
 			for (int i = 0; i < dim; i++)
 			{
 				if (i == dir)
-				{
 					axis.SetComponent(i, 1);
-				}
 				else
-				{
 					axis.SetComponent(i, 0);
-				}
 			}
 			return axis;
 		}
@@ -215,6 +207,7 @@ namespace ProjectEstrada.Core
 			return new Vector(simple);
 		}
 
+		// TODO: If AngouriMath creates an Entity.Vector, this should be removed
 		public MathNet.Numerics.LinearAlgebra.Vector<double> EvalNumerical()
         {
 			var numerical = new double[Dimension];
@@ -241,6 +234,10 @@ namespace ProjectEstrada.Core
 		{
 			return a.AddScalar(b);
 		}
+		public static Vector operator +(Entity a, Vector b)
+		{
+			return b.AddScalar(a);
+		}
 		public static Vector operator -(Vector a, Vector b)
 		{
 			return a.Subtract(b);
@@ -248,6 +245,10 @@ namespace ProjectEstrada.Core
 		public static Vector operator -(Vector a, Entity b)
 		{
 			return a.SubtractScalar(b);
+		}
+		public static Vector operator -(Entity a, Vector b)
+		{
+			return b.SubtractScalar(a);
 		}
 		public static Entity operator *(Vector a, Vector b)
 		{
@@ -257,6 +258,10 @@ namespace ProjectEstrada.Core
 		{
 			return a.Scalar(b);
 		}
+		public static Vector operator *(Entity a, Vector b)
+        {
+			return b.Scalar(a);
+        }
 		public static Vector operator /(Vector a, Entity b)
 		{
 			return a * (1 / b);

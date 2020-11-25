@@ -48,7 +48,7 @@ namespace ProjectEstrada.Core.Functions
 
     public enum FunctionType
     {
-        Basic,
+        Simple,
         Scalar,
         Parametric,
         Transformative,
