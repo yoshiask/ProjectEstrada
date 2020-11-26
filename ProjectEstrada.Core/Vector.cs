@@ -7,16 +7,16 @@ using System.Linq;
 
 namespace ProjectEstrada.Core
 {
-    public class Vector : IEquatable<Vector>, IList<Entity>
+    public class Vector : IEquatable<Vector>
     {
 		Entity[] vector;
 
 		/// <summary>
 		/// Gets the dimension of the vector.
 		/// </summary>
-		public int Dimension => vector.Length;
+		public Constants.Axis Dimension => (Constants.Axis)Size;
 
-        public int Count => vector.Length;
+        public int Size => vector.Length;
 
         public bool IsReadOnly => false;
 
@@ -39,6 +39,10 @@ namespace ProjectEstrada.Core
 		{
 			vector = new Entity[dim];
 		}
+		public Vector(Constants.Axis dim)
+		{
+			vector = new Entity[(int)dim];
+		}
 
 		public Vector(string str)
         {
@@ -57,17 +61,13 @@ namespace ProjectEstrada.Core
 		public void SetDimension(int dim)
 		{
 			var oldVector = vector;
-			int oldDim = Dimension;
+			int oldDim = Size;
 			vector = new Entity[dim];
 			Array.Copy(oldVector, vector, oldDim);
-			//for (int i = 0; i < oldDim; i++)
-            //{
-			//	SetComponent(i, oldVector[i]);
-            //}
-			//for (int i = oldDim; i < dim; i++)
-			//{
-			//	SetComponent(i, 0);
-			//}
+		}
+		public void SetDimension(Constants.Axis dim)
+		{
+			SetDimension((int)dim);
 		}
 
 		/// <summary>
@@ -78,6 +78,10 @@ namespace ProjectEstrada.Core
 		{
 			return vector[index];
 		}
+		public Entity GetComponent(Constants.Axis index)
+		{
+			return GetComponent((int)index);
+		}
 
 		/// <summary>
 		/// Sets the value of a single component of the vector.
@@ -87,6 +91,10 @@ namespace ProjectEstrada.Core
 		public void SetComponent(int index, Entity v)
 		{
 			vector[index] = v;
+		}
+		public void SetComponent(Constants.Axis index, Entity v)
+		{
+			SetComponent((int)index, v);
 		}
 
 		/// <summary>
@@ -117,8 +125,12 @@ namespace ProjectEstrada.Core
 		/// <param name="dir">the direction, or axis, where 0 is X, 1 is Y, 2 is Z, and so on</param>
 		public Entity GetAngleWithAxis(int dir)
 		{
-			Vector axis = GetAxisVector(dir, Dimension);
+			Vector axis = Constants.GetAxisVector(dir);
 			return MathS.Arccos(this * axis / GetMagnitude());
+		}
+		public Entity GetAngleWithAxis(Constants.Axis dir)
+		{
+			return GetAngleWithAxis((int)dir);
 		}
 
 		/// <summary>
@@ -160,49 +172,28 @@ namespace ProjectEstrada.Core
 		/// <summary>
 		/// Takes in two vectors and makes them the same length by padding the shorter vector with zeros until both vectors are the same dimension.
 		/// </summary>
-		/// <param name="a"></param>
-		/// <param name="b"></param>
 		public static void MakeSameDimension(Vector a, Vector b)
 		{
-			if (a.Dimension >= b.Dimension)
-				b.SetDimension(a.Dimension);
-			if (b.Dimension < a.Dimension)
-				a.SetDimension(b.Dimension);
-		}
-
-		/// <summary>
-		/// Creates a unit vector that points purely in the direction of an orthogonal axis.
-		/// </summary>
-		/// <param name="dir">the direction, or axis, where 0 is X, 1 is Y, 2 is Z, and so on</param>
-		/// <param name="dim">the desired dimension or length of the outputed vector</param>
-		/// <returns></returns>
-		public static Vector GetAxisVector(int dir, int dim)
-		{
-			Vector axis = new Vector(dim);
-			for (int i = 0; i < dim; i++)
-			{
-				if (i == dir)
-					axis.SetComponent(i, 1);
-				else
-					axis.SetComponent(i, 0);
-			}
-			return axis;
+			if (a.Size >= b.Size)
+				b.SetDimension(a.Size);
+			if (b.Size < a.Size)
+				a.SetDimension(b.Size);
 		}
 
 		//
 
 		public Vector Simplify()
         {
-			var simple = new Entity[Dimension];
-			for (int i = 0; i < Dimension; i++)
+			var simple = new Entity[Size];
+			for (int i = 0; i < Size; i++)
 				simple[i] = vector[i].Simplify();
 			return new Vector(simple);
         }
 
 		public Vector Substitute(Entity x, Entity value)
         {
-			var simple = new Entity[Dimension];
-			for (int i = 0; i < Dimension; i++)
+			var simple = new Entity[Size];
+			for (int i = 0; i < Size; i++)
 				simple[i] = vector[i].Substitute(x, value);
 			return new Vector(simple);
 		}
@@ -210,8 +201,8 @@ namespace ProjectEstrada.Core
 		// TODO: If AngouriMath creates an Entity.Vector, this should be removed
 		public MathNet.Numerics.LinearAlgebra.Vector<double> EvalNumerical()
         {
-			var numerical = new double[Dimension];
-			for (int i = 0; i < Dimension; i++)
+			var numerical = new double[Size];
+			for (int i = 0; i < Size; i++)
 				numerical[i] = vector[i].EvalNumerical().ToNumerics().Real;
 			return MathNet.Numerics.LinearAlgebra.Vector<double>.Build.DenseOfArray(numerical);
 		}
@@ -220,7 +211,7 @@ namespace ProjectEstrada.Core
 		public static Vector operator -(Vector a)
 		{
 			Vector negative = new Vector(a.Dimension);
-			for (int i = 0; i < a.Dimension; i++)
+			for (int i = 0; i < a.Size; i++)
 			{
 				negative.SetComponent(i, -1 * a.GetComponent(i));
 			}
@@ -282,7 +273,7 @@ namespace ProjectEstrada.Core
 		{
 			MakeSameDimension(this, b);
 			Vector add = new Vector(Dimension);
-			for (int i = 0; i < Dimension; i++)
+			for (int i = 0; i < Size; i++)
 			{
 				add.SetComponent(i, GetComponent(i) + b.GetComponent(i));
 			}
@@ -295,7 +286,7 @@ namespace ProjectEstrada.Core
 		public Vector AddScalar(Entity b)
         {
 			Vector add = new Vector(Dimension);
-			for (int i = 0; i < Dimension; i++)
+			for (int i = 0; i < Size; i++)
 			{
 				add.SetComponent(i, GetComponent(i) + b);
 			}
@@ -310,7 +301,7 @@ namespace ProjectEstrada.Core
 		{
 			MakeSameDimension(this, b);
 			Vector subtract = new Vector(Dimension);
-			for (int i = 0; i < Dimension; i++)
+			for (int i = 0; i < Size; i++)
 			{
 				subtract.SetComponent(i, GetComponent(i) - b.GetComponent(i));
 			}
@@ -323,7 +314,7 @@ namespace ProjectEstrada.Core
 		public Vector SubtractScalar(Entity b)
 		{
 			Vector subtract = new Vector(Dimension);
-			for (int i = 0; i < Dimension; i++)
+			for (int i = 0; i < Size; i++)
 			{
 				subtract.SetComponent(i, GetComponent(i) - b);
 			}
@@ -342,7 +333,7 @@ namespace ProjectEstrada.Core
 			}
 			Entity dot = 0;
 			MakeSameDimension(this, b);
-			for (int i = 0; i < Dimension; i++)
+			for (int i = 0; i < Size; i++)
 			{
 				dot += GetComponent(i) * b.GetComponent(i);
 			}
@@ -355,7 +346,7 @@ namespace ProjectEstrada.Core
 		/// <param name="b"></param>
 		public Vector Cross(Vector b, bool throwIfNotTwoOrThreeDim = false)
 		{
-			if (throwIfNotTwoOrThreeDim && Dimension > 3 && b.Dimension > 3)
+			if (throwIfNotTwoOrThreeDim && Size > 3 && b.Size > 3)
 			{
 				throw new DimensionException("Cross products require both vectors to have at most 3 dimensions.");
 			}
@@ -375,7 +366,7 @@ namespace ProjectEstrada.Core
 		public Vector Scalar(Entity b)
 		{
 			Vector scalar = new Vector(Dimension);
-			for (int i = 0; i < Dimension; i++)
+			for (int i = 0; i < Size; i++)
 			{
 				scalar.SetComponent(i, b * GetComponent(i));
 			}
@@ -386,19 +377,19 @@ namespace ProjectEstrada.Core
 		{
 			if (this.Dimension < b.Dimension)
 			{
-				for (int i = 0; i < b.Dimension; i++)
+				for (int i = 0; i < b.Size; i++)
 				{
-					if (i < this.Dimension && this.GetComponent(i) == b.GetComponent(i))
+					if (i < this.Size && this.GetComponent(i) == b.GetComponent(i))
 						continue;
-					else if (i >= this.Dimension && b.GetComponent(i) == 0)
+					else if (i >= this.Size && b.GetComponent(i) == 0)
 						continue;
-					else if (i < this.Dimension && this.GetComponent(i) != b.GetComponent(i))
+					else if (i < this.Size && this.GetComponent(i) != b.GetComponent(i))
 						return false;
 				}
 			}
 			else if (this.Dimension == b.Dimension)
 			{
-				for (int i = 0; i < this.Dimension; i++)
+				for (int i = 0; i < this.Size; i++)
 				{
 					if (this.GetComponent(i) == b.GetComponent(i))
 						continue;
@@ -408,84 +399,18 @@ namespace ProjectEstrada.Core
 			}
 			else
 			{
-				for (int i = 0; i < this.Dimension; i++)
+				for (int i = 0; i < this.Size; i++)
 				{
-					if (i < b.Dimension && this.GetComponent(i) == b.GetComponent(i))
+					if (i < b.Size && this.GetComponent(i) == b.GetComponent(i))
 						continue;
-					else if (i >= b.Dimension && this.GetComponent(i) == 0)
+					else if (i >= b.Size && this.GetComponent(i) == 0)
 						continue;
-					else if (i < b.Dimension && this.GetComponent(i) != b.GetComponent(i))
+					else if (i < b.Size && this.GetComponent(i) != b.GetComponent(i))
 						return false;
 				}
 			}
 
 			return true;
-		}
-		#endregion
-
-		#region List
-		public int IndexOf(Entity item)
-		{
-			for (int i = 0; i < vector.Length; i++)
-            {
-				if (vector[i] == item)
-					return i;
-            }
-			return -1;
-		}
-
-		public void Insert(int index, Entity item)
-		{
-			SetDimension(Dimension + 1);
-			var span = vector.AsSpan();
-			throw new NotImplementedException();
-		}
-
-		public void RemoveAt(int index)
-		{
-			throw new NotImplementedException();
-		}
-
-		public void Add(Entity item)
-		{
-			throw new NotImplementedException();
-		}
-
-		public void Clear()
-		{
-			var span = vector.AsSpan();
-			span.Fill(0);
-			vector = span.ToArray();
-		}
-
-		public bool Contains(Entity item)
-		{
-			foreach (Entity e in vector)
-            {
-				if (e == item)
-					return true;
-            }
-			return false;
-		}
-
-		public void CopyTo(Entity[] array, int arrayIndex)
-		{
-			vector.CopyTo(array, arrayIndex);
-		}
-
-		public bool Remove(Entity item)
-		{
-			throw new NotImplementedException();
-		}
-
-		public IEnumerator<Entity> GetEnumerator()
-		{
-			return (IEnumerator<Entity>)vector.GetEnumerator();
-		}
-
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return vector.GetEnumerator();
 		}
 		#endregion
 	}

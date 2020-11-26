@@ -20,14 +20,14 @@ namespace ProjectEstrada.Core.Functions
 
                 if (Inputs.Count == 1)
                 {
-                    if (FunctionBody.Dimension == 1)
+                    if (FunctionBody.Size == 1)
                         return FunctionType.Simple;
                     else
                         return FunctionType.Parametric;
                 }
                 else
                 {
-                    if (FunctionBody.Dimension == 1)
+                    if (FunctionBody.Size == 1)
                         return FunctionType.Scalar;
                     else
                         return FunctionType.VectorValued;
@@ -101,5 +101,11 @@ namespace ProjectEstrada.Core.Functions
             }
             return values;
         }
+
+        #region Scalar Functions
+
+
+
+        #endregion
     }
 }
