@@ -14,9 +14,12 @@ namespace ProjectEstrada.Core.Functions
     {
         public abstract FunctionType Type { get; }
 
+        public FunctionType RequestedType { get; set; }
+
         public string Name { get; set; }
 
         public List<Entity.Variable> Inputs { get; set; }
+
 
         public TSym FunctionBody { get; set; }
 

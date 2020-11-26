@@ -27,5 +27,32 @@ namespace ProjectEstrada.Core.Functions
             }
             return newFunc;
         }
-    }
+
+        #region Operations
+
+        public Vector Parameterize()
+		{
+            Vector vec = new Vector(Inputs.Count +1);
+            for (int i = 0; i < Inputs.Count - 1; i++)
+			{
+                vec[i] = Inputs.ElementAt(i);
+			}
+            vec[Inputs.Count - 1] = FunctionBody;
+            return vec;
+		}
+
+        public Vector Normals()
+		{
+            Vector vectorFunc = Parameterize();
+            Vector normalFunc = new Vector(vectorFunc.Size);
+            for (int i = 0; i < vectorFunc.Size - 1; i++)
+			{
+                normalFunc[i] = -vectorFunc[i].Differentiate(Inputs.ElementAt(i));
+			}
+            normalFunc[Inputs.Count - 1] = 1;
+            return normalFunc;
+		}
+
+		#endregion
+	}
 }
