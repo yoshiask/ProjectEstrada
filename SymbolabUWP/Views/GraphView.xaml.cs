@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using AngouriMath;
 using System.Collections.Generic;
 using System.Linq;
+using ProjectEstrada.Core.Helpers;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -68,10 +69,10 @@ namespace SymbolabUWP.Views
 
                 // Get a list of intervals that are continuous
                 // TODO: Do holes need to be handled as well?
-                VerticalAsymptotes = Lib.MathUtils.FindVerticalAsymptotes(value, Variable).OrderBy(d => d).ToList();
+                VerticalAsymptotes = MathHelper.FindVerticalAsymptotes(value, Variable).OrderBy(d => d).ToList();
                 VerticalAsymptotes.Insert(0, double.MinValue);
                 VerticalAsymptotes.Add(double.MaxValue);
-                Intervals = Lib.MathUtils.AdjacentPairs(VerticalAsymptotes).ToArray();
+                Intervals = MathHelper.AdjacentPairs(VerticalAsymptotes).ToArray();
             }
         }
         private Entity FunctionFirst
@@ -102,7 +103,7 @@ namespace SymbolabUWP.Views
             {
                 //EquationBox.Text = (string)e.Parameter;
                 FormulaLaTeX = (string)e.Parameter;
-                FormulaText = Lib.ParseLaTeX.ConvertToMathString(FormulaLaTeX);
+                FormulaText = ParseLaTeX.ConvertToMathString(FormulaLaTeX);
             }
             base.OnNavigatedTo(e);
         }

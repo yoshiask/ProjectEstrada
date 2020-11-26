@@ -2,14 +2,13 @@
 using CSharpMath.Atom;
 using CSharpMath.Atom.Atoms;
 using Microsoft.Toolkit.Diagnostics;
-using ProjectEstrada.Core;
 using ProjectEstrada.Core.Functions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace SymbolabUWP.Lib
+namespace ProjectEstrada.Core.Helpers
 {
     public static class ParseLaTeX
     {
@@ -168,7 +167,13 @@ namespace SymbolabUWP.Lib
             for (int i = 0; i < atoms.Count; i++)
             {
                 var atom = atoms[i];
-                if (atom is Fraction fraction)
+                if (atom is Variable variable)
+                {
+                    output += atom.Nucleus;
+                    if (i + 1 < atoms.Count && atoms[i + 1] is Variable)
+                        output += "*";
+                }
+                else if (atom is Fraction fraction)
                 {
                     output += $"({ConvertToMathString(fraction.Numerator)})/({ConvertToMathString(fraction.Denominator)})";
                 }
@@ -439,6 +444,5 @@ namespace SymbolabUWP.Lib
             }
             return output;
         }
-
     }
 }

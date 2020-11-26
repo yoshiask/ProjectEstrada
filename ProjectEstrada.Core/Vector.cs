@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace ProjectEstrada.Core
 {
-    public class Vector : IEquatable<Vector>, IList<Entity>, ILatexiseable
+    public class Vector : IEquatable<Vector>, ILatexiseable
     {
 		Entity[] vector;
 
@@ -437,71 +437,5 @@ namespace ProjectEstrada.Core
 			return true;
 		}
 		#endregion
-
-		#region List
-		public int IndexOf(Entity item)
-		{
-			for (int i = 0; i < vector.Length; i++)
-            {
-				if (vector[i] == item)
-					return i;
-            }
-			return -1;
-		}
-
-		public void Insert(int index, Entity item)
-		{
-			SetDimension(Dimension + 1);
-			var span = vector.AsSpan();
-			throw new NotImplementedException();
-		}
-
-		public void RemoveAt(int index)
-		{
-			throw new NotImplementedException();
-		}
-
-		public void Add(Entity item)
-		{
-			throw new NotImplementedException();
-		}
-
-		public void Clear()
-		{
-			var span = vector.AsSpan();
-			span.Fill(0);
-			vector = span.ToArray();
-		}
-
-		public bool Contains(Entity item)
-		{
-			foreach (Entity e in vector)
-            {
-				if (e == item)
-					return true;
-            }
-			return false;
-		}
-
-		public void CopyTo(Entity[] array, int arrayIndex)
-		{
-			vector.CopyTo(array, arrayIndex);
-		}
-
-		public bool Remove(Entity item)
-		{
-			throw new NotImplementedException();
-		}
-
-		public IEnumerator<Entity> GetEnumerator()
-		{
-			return (IEnumerator<Entity>)vector.GetEnumerator();
-		}
-
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return vector.GetEnumerator();
-		}
-        #endregion
     }
 }

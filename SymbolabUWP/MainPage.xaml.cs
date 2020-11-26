@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SymbolabUWP.ViewModels;
+using System;
 using Windows.ApplicationModel.Core;
 using Windows.UI.Core;
 using Windows.UI.ViewManagement;
@@ -14,31 +15,21 @@ namespace SymbolabUWP
     /// </summary>
     public sealed partial class MainPage : Page
     {
+        public MainViewModel ViewModel => (MainViewModel)DataContext;
+
         private TextBox lastFocusedTextBox = null;
-
-        private string OutputLatex(string latexIn)
-        {
-            const string errorText = @"\color{red}\text{Error: Failed to parse function}";
-
-            try
-            {
-                var function = Lib.ParseLaTeX.ParseFunction(latexIn);
-                if (function == null)
-                    return @"\color{red}\text{Error: Failed to parse function}";
-                else
-                    return function.Latexise();
-            }
-            catch
-            {
-                return errorText;
-            }
-        }
 
         public MainPage()
         {
             this.InitializeComponent();
+            this.DataContext = ((App)Application.Current).Services.GetService(typeof(MainViewModel));
 
             Window.Current.SetTitleBar(TitlebarGrid);
+
+            GraphContainer.Child = new ProjectEstrada.Graphics.Controls.GraphControl()
+            {
+                
+            };
         }
 
         private void Text_Click(object sender, RoutedEventArgs e)
@@ -100,19 +91,6 @@ namespace SymbolabUWP
 
         private async void OpenGraph_Click(object sender, RoutedEventArgs e)
         {
-            if (lastFocusedTextBox == null)
-                return;
-
-            try
-            {
-                OutputBox.LaTeXString = Lib.ParseLaTeX.ParseFunction(lastFocusedTextBox.Text).Latexise();
-            }
-            catch
-            {
-                OutputBox.LaTeXString = @"\color{red}\text{Error: Failed to parse function}";
-            }
-            return;
-
             CoreApplicationView newView = CoreApplication.CreateNewView();
             int newViewId = 0;
             string formulaText = lastFocusedTextBox.Text;
@@ -132,6 +110,11 @@ namespace SymbolabUWP
         private void TextInput_GotFocus(object sender, RoutedEventArgs e)
         {
             lastFocusedTextBox = sender as TextBox;
+        }
+
+        private void AddButton_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.Functions.Add(new FunctionViewModel());
         }
     }
 }

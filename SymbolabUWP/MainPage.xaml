@@ -8,7 +8,7 @@
     xmlns:controls="using:SymbolabUWP.Controls"
     xmlns:winui="using:Microsoft.UI.Xaml.Controls"
     xmlns:toolkit="using:Microsoft.Toolkit.Uwp.UI.Controls"
-    xmlns:views="using:SymbolabUWP.Views"
+    xmlns:viewmodels="using:SymbolabUWP.ViewModels" xmlns:graphics="using:ProjectEstrada.Graphics.Controls"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
     
@@ -17,13 +17,12 @@
             <RowDefinition Height="32"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="0"/>
+            <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
         <Grid Grid.Row="0" Grid.ColumnSpan="2" Background="{ThemeResource SystemControlChromeMediumLowAcrylicWindowMediumBrush}">
@@ -88,21 +87,49 @@
             </toolkit:TabbedCommandBar.MenuItems>
         </toolkit:TabbedCommandBar>
 
-        <TextBox x:Name="TextInput" PlaceholderText="Insert equation here" GotFocus="TextInput_GotFocus"
-                 TextWrapping="Wrap" AcceptsReturn="True" Grid.Row="2" CornerRadius="0"
-                 Text="f(x) = x^2"/>
+        <ListView ItemsSource="{x:Bind ViewModel.Functions, Mode=TwoWay}" Grid.Row="2"
+                  IsItemClickEnabled="False" SelectionMode="None">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="viewmodels:FunctionViewModel">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition MinHeight="100" Height="*"/>
+                            <RowDefinition MinHeight="100" Height="*"/>
+                        </Grid.RowDefinitions>
+                        <TextBox PlaceholderText="Insert equation here" GotFocus="TextInput_GotFocus"
+                                 TextWrapping="Wrap" AcceptsReturn="False" CornerRadius="0"
+                                 HorizontalAlignment="Stretch"
+                                 Text="{x:Bind InputText, Mode=TwoWay}"/>
 
-        <controls:LatexCanvas LaTeXString="{x:Bind TextInput.Text, Mode=OneWay}" Grid.Row="3"
-                              Background="{ThemeResource AppBarBackgroundThemeBrush}"
-                              Foreground="{ThemeResource DefaultTextForegroundThemeBrush}"
-                              FontSize="{x:Bind FontSizeBox.Value, Mode=OneWay}"/>
+                        <controls:LatexCanvas LaTeXString="{x:Bind InputText, Mode=OneWay}" Grid.Row="1"
+                                              Background="{ThemeResource AppBarBackgroundThemeBrush}"
+                                              Foreground="{ThemeResource DefaultTextForegroundThemeBrush}"
+                                              FontSize="{x:Bind FontSize, Mode=OneWay}"/>
 
-        <controls:LatexCanvas x:Name="OutputBox"
-                              LaTeXString="{x:Bind OutputLatex(TextInput.Text), Mode=OneWay}" Grid.Row="4"
-                              Background="{ThemeResource AppBarBackgroundThemeBrush}"
-                              Foreground="{ThemeResource DefaultTextForegroundThemeBrush}"
-                              FontSize="{x:Bind FontSizeBox.Value, Mode=OneWay}"/>
+                        <controls:LatexCanvas LaTeXString="{x:Bind OutputLaTeX, Mode=OneWay}" Grid.Row="2"
+                                              Background="{ThemeResource AppBarBackgroundThemeBrush}"
+                                              Foreground="{ThemeResource DefaultTextForegroundThemeBrush}"
+                                              FontSize="{x:Bind FontSize, Mode=OneWay}"/>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                </Style>
+            </ListView.ItemContainerStyle>
+        </ListView>
 
-        <!--<views:GraphView Grid.Row="2" Grid.Column="1" Grid.RowSpan="2"/>-->
+        <StackPanel Orientation="Horizontal" Grid.Row="3">
+            <Button Style="{ThemeResource ButtonRevealStyle}" Click="AddButton_Click">
+                <StackPanel Orientation="Horizontal" Spacing="5" Padding="5">
+                    <SymbolIcon Symbol="Add"/>
+                    <TextBlock Text="Add"/>
+                </StackPanel>
+            </Button>
+        </StackPanel>
+
+        <Border x:Name="GraphContainer" Grid.Column="1" Grid.Row="2" Grid.RowSpan="2"/>
     </Grid>
 </Page>

@@ -16,14 +16,7 @@ namespace ProjectEstrada.Graphics.Controls
     {
         public ObservableCollection<string> Functions { get; } = new ObservableCollection<string>();
 
-        static GenericFunction scalar = new GenericFunction()
-        {
-            FunctionBody = "x*y^2",
-            Inputs = new List<Entity.Variable>()
-            {
-                "x", "y"
-            }
-        };
+        static GenericFunction scalar = ParseLaTeX.ParseFunction(@"f(x,y) = xy^2");
 
         public GraphControl()
         {
@@ -33,6 +26,8 @@ namespace ProjectEstrada.Graphics.Controls
 
             plane.VertexPositions = plane.VertexPositions.Select(v =>
             {
+                // TODO: Switch to the following:
+                // v = scalar.Parameterize().EvaluateAsVector3(v.X, v.Z);
                 v.Y = (float)scalar.Evaluate(v.X, v.Z)[0];
                 return v;
             }).ToList();

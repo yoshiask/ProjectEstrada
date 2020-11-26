@@ -105,6 +105,27 @@ namespace ProjectEstrada.Core.Functions
             return values;
         }
 
+        public GenericFunction Parameterize()
+        {
+            if (Type == FunctionType.Scalar)
+            {
+                var f = FunctionBody[0];
+                var newFunction = this.Copy();
+                newFunction.FunctionBody.SetDimension(Inputs.Count + 1);
+                int d = 0;
+                for (; d < Inputs.Count; d++)
+                {
+                    newFunction.FunctionBody[d] = Inputs[d];
+                }
+                newFunction.FunctionBody[d] = f;
+                return newFunction;
+            }
+            else
+            {
+                return this;
+            }
+        }
+
         public string Latexise()
         {
             string varList = "(" + String.Join(",", Inputs) + ")";
