@@ -16,6 +16,24 @@ namespace SymbolabUWP
     {
         private TextBox lastFocusedTextBox = null;
 
+        private string OutputLatex(string latexIn)
+        {
+            const string errorText = @"\color{red}\text{Error: Failed to parse function}";
+
+            try
+            {
+                var function = Lib.ParseLaTeX.ParseFunction(latexIn);
+                if (function == null)
+                    return @"\color{red}\text{Error: Failed to parse function}";
+                else
+                    return function.Latexise();
+            }
+            catch
+            {
+                return errorText;
+            }
+        }
+
         public MainPage()
         {
             this.InitializeComponent();

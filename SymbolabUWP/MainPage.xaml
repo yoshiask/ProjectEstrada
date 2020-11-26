@@ -23,11 +23,11 @@
 
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="0"/>
         </Grid.ColumnDefinitions>
 
         <Grid Grid.Row="0" Grid.ColumnSpan="2" Background="{ThemeResource SystemControlChromeMediumLowAcrylicWindowMediumBrush}">
-            <TextBlock Text="LaTeX Notepad" VerticalAlignment="Center" Foreground="White"
+            <TextBlock Text="Project Estrada" VerticalAlignment="Center" Foreground="White"
                        HorizontalTextAlignment="Center" HorizontalAlignment="Center" Margin="5"/>
 
             <toolkit:DockPanel LastChildFill="True">
@@ -90,14 +90,15 @@
 
         <TextBox x:Name="TextInput" PlaceholderText="Insert equation here" GotFocus="TextInput_GotFocus"
                  TextWrapping="Wrap" AcceptsReturn="True" Grid.Row="2" CornerRadius="0"
-                 Text="f(x,y) = xy^2"/>
+                 Text="f(x) = x^2"/>
 
         <controls:LatexCanvas LaTeXString="{x:Bind TextInput.Text, Mode=OneWay}" Grid.Row="3"
                               Background="{ThemeResource AppBarBackgroundThemeBrush}"
                               Foreground="{ThemeResource DefaultTextForegroundThemeBrush}"
                               FontSize="{x:Bind FontSizeBox.Value, Mode=OneWay}"/>
 
-        <controls:LatexCanvas x:Name="OutputBox" Grid.Row="4"
+        <controls:LatexCanvas x:Name="OutputBox"
+                              LaTeXString="{x:Bind OutputLatex(TextInput.Text), Mode=OneWay}" Grid.Row="4"
                               Background="{ThemeResource AppBarBackgroundThemeBrush}"
                               Foreground="{ThemeResource DefaultTextForegroundThemeBrush}"
                               FontSize="{x:Bind FontSizeBox.Value, Mode=OneWay}"/>

@@ -42,10 +42,23 @@ namespace SymbolabUWP.Lib
                 function.RequestedType = FunctionType.Scalar;
 
                 // Convert the scalar function to a 1D vector-valued function
-                var vector = new Inner(
-                    new Boundary("〈"),
-                    new MathList(atoms.Skip(idxOfEquals + 1)),
-                    new Boundary("〉"));
+                var expressionParts = atoms.Skip(idxOfEquals + 1).ToArray();
+                Inner vector;
+                if (expressionParts.Length == 1 && expressionParts[0] is Inner inner)
+                {
+                    // Output is already expressed as a vector
+                    vector = inner;
+
+                    // It's not really a parametric function, how can the original
+                    // function type be preserved if every function is turned into
+                    // a vector-valued function?
+                    function.RequestedType = FunctionType.Parametric;
+                }
+                else
+                {
+                    vector = new Inner(new Boundary("〈"), new MathList(expressionParts), new Boundary("〉"));
+                }
+                
                 atoms = atoms.Take(idxOfEquals + 1).ToList();
                 atoms.Add(vector);
             }
