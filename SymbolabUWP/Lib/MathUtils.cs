@@ -1,4 +1,5 @@
 ﻿using AngouriMath;
+using CSharpMath.Atom;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -62,6 +63,52 @@ namespace SymbolabUWP.Lib
                 else
                     yield return new Tuple<T, T>(items[i], items[0]);
             }
+        }
+
+        public static List<List<T>> Split<T>(this IList<T> list, T splitItem) where T : IEquatable<T>
+        {
+            var splitList = new List<List<T>>();
+
+            var sublist = new List<T>();
+            for (int i = 0; i < list.Count; i++)
+            {
+                var item = list[i];
+                if (item.Equals(splitItem))
+                {
+                    splitList.Add(sublist);
+                    sublist = new List<T>();
+                }
+                else
+                {
+                    sublist.Add(item);
+                }
+            }
+
+            return splitList;
+        }
+
+        public static List<MathList> Split(this MathList list, MathAtom splitAtom)
+        {
+            var splitList = new List<MathList>();
+
+            var sublist = new MathList();
+            for (int i = 0; i < list.Count; i++)
+            {
+                var item = list[i];
+                bool isSplitItem = item == splitAtom;
+                if (!isSplitItem)
+                {
+                    sublist.Add(item);
+                }
+
+                if (isSplitItem || i + 1 == list.Count)
+                {
+                    splitList.Add(sublist);
+                    sublist = new MathList();
+                }
+            }
+
+            return splitList;
         }
     }
 }

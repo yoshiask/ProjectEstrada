@@ -1,4 +1,5 @@
 ﻿using AngouriMath;
+using AngouriMath.Core;
 using Microsoft.Toolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using VectorNum = MathNet.Numerics.LinearAlgebra.Vector<double>;
 
 namespace ProjectEstrada.Core.Functions
 {
-    public class GenericFunction
+    public class GenericFunction : ILatexiseable
     {
         public FunctionType Type
         {
@@ -34,6 +35,8 @@ namespace ProjectEstrada.Core.Functions
                 }
             }
         }
+
+        public FunctionType RequestedType { get; set; }
 
         public string Name { get; set; }
 
@@ -100,6 +103,36 @@ namespace ProjectEstrada.Core.Functions
                 values[i] = valuePair.Value;
             }
             return values;
+        }
+
+        public string Latexise()
+        {
+            string varList = "(" + String.Join(",", Inputs) + ")";
+
+            switch (RequestedType)
+            {
+                case FunctionType.Simple:
+                case FunctionType.Scalar:
+                    return $"{Name}{varList} = {FunctionBody[0].Latexise()}";
+
+                case FunctionType.Parametric:
+                case FunctionType.VectorValued:
+                    // TODO: Change vec to overrightarrow
+                    return $"\\vec{{{Name}}}{varList} = {FunctionBody.Latexise()}";
+
+                case FunctionType.Transformation:
+                    if (Type == FunctionType.Simple)
+                    {
+                        return $"\\widehat{{{Name}}}:{Inputs[0]} \\rightarrow {FunctionBody[0].Latexise()}";
+                    }
+                    else
+                    {
+                        return $"\\widehat{{{Name}}}:{varList} \\rightarrow {FunctionBody.Latexise("(", ")")}";
+                    }
+
+                default:
+                    throw new NotImplementedException(Type.ToString());
+            }
         }
     }
 }

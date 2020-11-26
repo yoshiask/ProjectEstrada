@@ -1,4 +1,5 @@
 ﻿using AngouriMath;
+using AngouriMath.Core;
 using Microsoft.Toolkit.Diagnostics;
 using System;
 using System.Collections;
@@ -7,7 +8,7 @@ using System.Linq;
 
 namespace ProjectEstrada.Core
 {
-    public class Vector : IEquatable<Vector>, IList<Entity>
+    public class Vector : IEquatable<Vector>, IList<Entity>, ILatexiseable
     {
 		Entity[] vector;
 
@@ -42,10 +43,15 @@ namespace ProjectEstrada.Core
 
 		public Vector(string str)
         {
+			// Make sure this is a string that can actually be parsed as a vector
 			Guard.IsTrue(str.StartsWith("<") && str.EndsWith(">"), nameof(str));
 			Guard.IsGreaterThan(str.Length, 2, nameof(str));
 
-			vector = str.Split(',').Cast<Entity>().ToArray();
+			// Strip the angle braces
+			str = str.Remove(0, 1);
+			str = str.Remove(str.Length - 1, 1);
+
+			vector = str.Split(',').Select(s => MathS.FromString(s)).ToArray();
         }
 
 		//
@@ -150,6 +156,15 @@ namespace ProjectEstrada.Core
 		public override string ToString()
 		{
 			return "<" + String.Join(", ", vector.Select(c => c.ToString())) + ">";
+		}
+
+		public string Latexise()
+		{
+			return Latexise("<", ">");
+		}
+		public string Latexise(string left, string right)
+        {
+			return "\\left" + left + " " + String.Join(", ", vector.Select(c => c.Latexise())) + " \\right" + right;
 		}
 
 		public Entity[] ToArray()
@@ -487,6 +502,6 @@ namespace ProjectEstrada.Core
 		{
 			return vector.GetEnumerator();
 		}
-		#endregion
-	}
+        #endregion
+    }
 }

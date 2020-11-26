@@ -1,6 +1,9 @@
 ﻿using AngouriMath;
 using CSharpMath.Atom;
 using CSharpMath.Atom.Atoms;
+using Microsoft.Toolkit.Diagnostics;
+using ProjectEstrada.Core;
+using ProjectEstrada.Core.Functions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +13,126 @@ namespace SymbolabUWP.Lib
 {
     public static class ParseLaTeX
     {
+        public static GenericFunction ParseFunction(string latexIn)
+        {
+            var parseResult = LaTeXParser.MathListFromLaTeX(latexIn);
+            if (parseResult.Error == null)
+            {
+                parseResult.Deconstruct(out MathList atoms, out _);
+                return ParseFunction(atoms);
+            }
+            return null;
+        }
+
+        public static GenericFunction ParseFunction(IList<MathAtom> atoms)
+        {
+            var function = new GenericFunction()
+            {
+                Name = string.Empty,
+                Inputs = new List<Entity.Variable>()
+            };
+
+            // Find where the equality operator is
+            int idxOfEquals = atoms.IndexOf(atoms.First(a => a is Relation));
+
+            // Figure out which kind of function this is
+            if (atoms[0] is Variable)
+            {
+                // Simple
+                function.RequestedType = FunctionType.Scalar;
+
+                // Convert the scalar function to a 1D vector-valued function
+                var vector = new Inner(
+                    new Boundary("〈"),
+                    new MathList(atoms.Skip(idxOfEquals + 1)),
+                    new Boundary("〉"));
+                atoms = atoms.Take(idxOfEquals + 1).ToList();
+                atoms.Add(vector);
+            }
+            else if (atoms[0] is Accent accent)
+            {
+                // Combining Right Arrow Above
+                if (accent.Nucleus == "\u20d7")
+                {
+                    // Vector
+                    function.RequestedType = FunctionType.VectorField;
+                }
+                // Combining Circumflex Accent
+                else if (accent.Nucleus == "\u0302")
+                {
+                    // Transformation
+                    function.RequestedType = FunctionType.Transformation;
+
+                    // Convert the transformation into a vector-valued function
+                    // for easier parsing
+                    // TODO
+                }
+                function.Name = accent.InnerList.DebugString;
+            }
+
+            // Find the name of the function
+            bool foundOpen = false;
+            int idxOfOpen = 0;
+            while (!foundOpen && idxOfOpen + 1 < atoms.Count)
+            {
+                var atom = atoms[idxOfOpen];
+                if (atom is Variable)
+                {
+                    function.Name += atom.Nucleus;
+                    idxOfOpen++;
+                }
+                else if (atom is Open)
+                {
+                    foundOpen = true;
+                }
+                else
+                {
+                    idxOfOpen++;
+                }
+            }
+
+            // Find the input variables
+            bool foundClose = false;
+            int idxOfClose = idxOfOpen + 1;
+            while (!foundClose && idxOfClose + 1 < atoms.Count)
+            {
+                var atom = atoms[idxOfClose];
+                if (atom is Variable var)
+                {
+                    function.Inputs.Add(var.Nucleus);
+                }
+                else if (atom is Punctuation)
+                {
+                    Guard.IsEqualTo(atom.Nucleus, ",", nameof(atom));
+                }
+                else
+                {
+                    Guard.IsOfType(atom, typeof(Close), nameof(atom));
+                    foundClose = true;
+                }
+                idxOfClose++;
+            }
+
+            for (int i = idxOfEquals + 1; i < atoms.Count; i++)
+            {
+                var atom = atoms[i];
+                if (atom is Inner inner)
+                {
+                    if (inner.LeftBoundary.Nucleus == "〈" && inner.RightBoundary.Nucleus == "〉")
+                    {
+                        // Vector
+                        var components = inner.InnerList.Split(new Punctuation(","));
+
+                        function.FunctionBody = new Vector(
+                            "<" + String.Join(",", components.Select(c => ConvertToMathString(c))) + ">"
+                        );
+                    }
+                }
+            }
+
+            return function;
+        }
+
         public static Entity ParseExpression(string latexIn)
         {
             return MathS.FromString(ConvertToMathString(latexIn)).Simplify();
@@ -17,7 +140,6 @@ namespace SymbolabUWP.Lib
 
         public static string ConvertToMathString(string latexIn)
         {
-            string output = "";
             var parseResult = LaTeXParser.MathListFromLaTeX(latexIn);
             if (parseResult.Error == null)
             {
@@ -152,7 +274,7 @@ namespace SymbolabUWP.Lib
         }
 
         /// <summary>
-        /// A dirty way to convert to an AngouriMath string without paring LaTeX.
+        /// A dirty way to convert to an AngouriMath string without actually parsing LaTeX.
         /// </summary>
         /// <remarks>
         /// This converter is much more picky than <see cref="ConvertToMathString(string)"/>,

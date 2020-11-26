@@ -18,6 +18,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <Grid.ColumnDefinitions>
@@ -87,14 +88,20 @@
             </toolkit:TabbedCommandBar.MenuItems>
         </toolkit:TabbedCommandBar>
 
-        <TextBox x:Name="TextInput" PlaceholderText="Insert equation here"
-                 TextWrapping="Wrap" AcceptsReturn="True" Grid.Row="2" CornerRadius="0"/>
+        <TextBox x:Name="TextInput" PlaceholderText="Insert equation here" GotFocus="TextInput_GotFocus"
+                 TextWrapping="Wrap" AcceptsReturn="True" Grid.Row="2" CornerRadius="0"
+                 Text="f(x,y) = xy^2"/>
 
         <controls:LatexCanvas LaTeXString="{x:Bind TextInput.Text, Mode=OneWay}" Grid.Row="3"
                               Background="{ThemeResource AppBarBackgroundThemeBrush}"
                               Foreground="{ThemeResource DefaultTextForegroundThemeBrush}"
                               FontSize="{x:Bind FontSizeBox.Value, Mode=OneWay}"/>
 
-        <views:GraphView Grid.Row="2" Grid.Column="1" Grid.RowSpan="2"/>
+        <controls:LatexCanvas x:Name="OutputBox" Grid.Row="4"
+                              Background="{ThemeResource AppBarBackgroundThemeBrush}"
+                              Foreground="{ThemeResource DefaultTextForegroundThemeBrush}"
+                              FontSize="{x:Bind FontSizeBox.Value, Mode=OneWay}"/>
+
+        <!--<views:GraphView Grid.Row="2" Grid.Column="1" Grid.RowSpan="2"/>-->
     </Grid>
 </Page>
