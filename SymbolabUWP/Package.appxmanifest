@@ -14,8 +14,8 @@
   <mp:PhoneIdentity PhoneProductId="914ff855-7aa1-44d5-82b5-42b49603d32b" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>SymbolabUWP</DisplayName>
-    <PublisherDisplayName>jjask</PublisherDisplayName>
+    <DisplayName>Project Estrada</DisplayName>
+    <PublisherDisplayName>Joshua Askharoun</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 
@@ -32,7 +32,7 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="SymbolabUWP.App">
       <uap:VisualElements
-        DisplayName="SymbolabUWP"
+        DisplayName="Project Estrada"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png"
         Description="SymbolabUWP"

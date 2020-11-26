@@ -14,6 +14,26 @@ namespace SymbolabUWP
     /// </summary>
     public sealed partial class MainPage : Page
     {
+        private TextBox lastFocusedTextBox = null;
+
+        private string OutputLatex(string latexIn)
+        {
+            const string errorText = @"\color{red}\text{Error: Failed to parse function}";
+
+            try
+            {
+                var function = Lib.ParseLaTeX.ParseFunction(latexIn);
+                if (function == null)
+                    return @"\color{red}\text{Error: Failed to parse function}";
+                else
+                    return function.Latexise();
+            }
+            catch
+            {
+                return errorText;
+            }
+        }
+
         public MainPage()
         {
             this.InitializeComponent();
@@ -23,42 +43,54 @@ namespace SymbolabUWP
 
         private void Text_Click(object sender, RoutedEventArgs e)
         {
-            string text = TextInput.SelectedText;
-            int start = TextInput.SelectionStart;
-            int length = TextInput.SelectionLength;
-            TextInput.Text = TextInput.Text.Remove(start, length);
-            TextInput.Text = TextInput.Text.Insert(start, @"\text{" + text + "}");
-            TextInput.SelectionStart = start + 6;
+            if (lastFocusedTextBox == null)
+                return;
+
+            string text = lastFocusedTextBox.SelectedText;
+            int start = lastFocusedTextBox.SelectionStart;
+            int length = lastFocusedTextBox.SelectionLength;
+            lastFocusedTextBox.Text = lastFocusedTextBox.Text.Remove(start, length);
+            lastFocusedTextBox.Text = lastFocusedTextBox.Text.Insert(start, @"\text{" + text + "}");
+            lastFocusedTextBox.SelectionStart = start + 6;
         }
 
         private void Bold_Click(object sender, RoutedEventArgs e)
         {
-            string text = TextInput.SelectedText;
-            int start = TextInput.SelectionStart;
-            int length = TextInput.SelectionLength;
-            TextInput.Text = TextInput.Text.Remove(start, length);
-            TextInput.Text = TextInput.Text.Insert(start, @"\bf{" + text + "}");
-            TextInput.SelectionStart = start + 4;
+            if (lastFocusedTextBox == null)
+                return;
+
+            string text = lastFocusedTextBox.SelectedText;
+            int start = lastFocusedTextBox.SelectionStart;
+            int length = lastFocusedTextBox.SelectionLength;
+            lastFocusedTextBox.Text = lastFocusedTextBox.Text.Remove(start, length);
+            lastFocusedTextBox.Text = lastFocusedTextBox.Text.Insert(start, @"\bf{" + text + "}");
+            lastFocusedTextBox.SelectionStart = start + 4;
         }
 
         private void Italic_Click(object sender, RoutedEventArgs e)
         {
-            string text = TextInput.SelectedText;
-            int start = TextInput.SelectionStart;
-            int length = TextInput.SelectionLength;
-            TextInput.Text = TextInput.Text.Remove(start, length);
-            TextInput.Text = TextInput.Text.Insert(start, @"\it{" + text + "}");
-            TextInput.SelectionStart = start + 4;
+            if (lastFocusedTextBox == null)
+                return;
+
+            string text = lastFocusedTextBox.SelectedText;
+            int start = lastFocusedTextBox.SelectionStart;
+            int length = lastFocusedTextBox.SelectionLength;
+            lastFocusedTextBox.Text = lastFocusedTextBox.Text.Remove(start, length);
+            lastFocusedTextBox.Text = lastFocusedTextBox.Text.Insert(start, @"\it{" + text + "}");
+            lastFocusedTextBox.SelectionStart = start + 4;
         }
 
         private void Underline_Click(object sender, RoutedEventArgs e)
         {
-            string text = TextInput.SelectedText;
-            int start = TextInput.SelectionStart;
-            int length = TextInput.SelectionLength;
-            TextInput.Text = TextInput.Text.Remove(start, length);
-            TextInput.Text = TextInput.Text.Insert(start, @"\underline{" + text + "}");
-            TextInput.SelectionStart = start + 11;
+            if (lastFocusedTextBox == null)
+                return;
+
+            string text = lastFocusedTextBox.SelectedText;
+            int start = lastFocusedTextBox.SelectionStart;
+            int length = lastFocusedTextBox.SelectionLength;
+            lastFocusedTextBox.Text = lastFocusedTextBox.Text.Remove(start, length);
+            lastFocusedTextBox.Text = lastFocusedTextBox.Text.Insert(start, @"\underline{" + text + "}");
+            lastFocusedTextBox.SelectionStart = start + 11;
         }
 
         private void List_Click(object sender, RoutedEventArgs e)
@@ -68,9 +100,22 @@ namespace SymbolabUWP
 
         private async void OpenGraph_Click(object sender, RoutedEventArgs e)
         {
+            if (lastFocusedTextBox == null)
+                return;
+
+            try
+            {
+                OutputBox.LaTeXString = Lib.ParseLaTeX.ParseFunction(lastFocusedTextBox.Text).Latexise();
+            }
+            catch
+            {
+                OutputBox.LaTeXString = @"\color{red}\text{Error: Failed to parse function}";
+            }
+            return;
+
             CoreApplicationView newView = CoreApplication.CreateNewView();
             int newViewId = 0;
-            string formulaText = TextInput.Text;
+            string formulaText = lastFocusedTextBox.Text;
             await newView.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
                 Frame frame = new Frame();
@@ -82,6 +127,11 @@ namespace SymbolabUWP
                 newViewId = ApplicationView.GetForCurrentView().Id;
             });
             bool viewShown = await ApplicationViewSwitcher.TryShowAsStandaloneAsync(newViewId);
+        }
+
+        private void TextInput_GotFocus(object sender, RoutedEventArgs e)
+        {
+            lastFocusedTextBox = sender as TextBox;
         }
     }
 }

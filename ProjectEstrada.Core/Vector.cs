@@ -1,4 +1,5 @@
 ﻿using AngouriMath;
+using AngouriMath.Core;
 using Microsoft.Toolkit.Diagnostics;
 using System;
 using System.Collections;

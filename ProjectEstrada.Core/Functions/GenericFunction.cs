@@ -35,6 +35,8 @@ namespace ProjectEstrada.Core.Functions
             }
         }
 
+        public FunctionType RequestedType { get; set; }
+
         public string Name { get; set; }
 
         public List<Entity.Variable> Inputs { get; set; }
