@@ -7,13 +7,13 @@
   IgnorableNamespaces="uap rescap">
 
   <Identity
-    Name="5968a9d0-d5c0-440a-b1c4-ef32102233ed"
+    Name="52374YoshiAskharoun.ProjectEstrada"
     Publisher="CN=CD3113F3-18EB-4B8D-9D8A-C6D373E7A464"
     Version="1.0.0.0" />
 
   <Properties>
-    <DisplayName>ProjectEstrada (Package)</DisplayName>
-    <PublisherDisplayName>jjask</PublisherDisplayName>
+    <DisplayName>Project Estrada</DisplayName>
+    <PublisherDisplayName>Joshua Askharoun</PublisherDisplayName>
     <Logo>Images\StoreLogo.png</Logo>
   </Properties>
 
@@ -31,7 +31,7 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
-        DisplayName="ProjectEstrada (Package)"
+        DisplayName="Project Estrada Desktop"
         Description="ProjectEstrada (Package)"
         BackgroundColor="transparent"
         Square150x150Logo="Images\Square150x150Logo.png"
