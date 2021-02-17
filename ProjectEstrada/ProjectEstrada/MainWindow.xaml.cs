@@ -1,7 +1,10 @@
 ﻿using Microsoft.UI.Xaml;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text;
 using TerraFX.Interop;
 using TerraFX.Utilities;
 using static TerraFX.Interop.Windows;
@@ -16,8 +19,12 @@ namespace ProjectEstrada
     /// </summary>
     public unsafe sealed partial class MainWindow : Window
     {
-        private ISwapChainPanelNative* m_swapChainNative;
-        private IDXGISwapChain1* m_swapChain;
+        ComPtr<ISwapChainPanelNative> m_swapChainNative;
+        ComPtr<IDXGISwapChain1> m_swapChain;
+        ComPtr<IDXGIDevice> m_dxgiDevice;
+        ComPtr<ID3D11Device> m_d3dDevice;
+        ComPtr<ID3D11DeviceContext> m_d3dContext;
+        ComPtr<ID3D11RenderTargetView> m_renderTargetView;
 
         public MainWindow()
         {
@@ -41,9 +48,10 @@ namespace ProjectEstrada
             if (swapChainPanelNativePtr != IntPtr.Zero)
             {
                 m_swapChainNative = (ISwapChainPanelNative*)swapChainPanelNativePtr;
+
                 try
                 {
-                    IDXGISwapChain1* swapChain;
+                    #region Init SwapChain
                     DXGI_SWAP_CHAIN_DESC1 swapChainDesc = new DXGI_SWAP_CHAIN_DESC1
                     {
                         Width = (uint)SwapChain.ActualWidth,
@@ -61,8 +69,7 @@ namespace ProjectEstrada
 
                     // Get D3DDevice
                     // This flag adds support for surfaces with a different color channel 
-                    // ordering than the API default. It is required for compatibility with
-                    // Direct2D.
+                    // ordering than the API default. It is required for compatibility with Direct2D.
                     D3D11_CREATE_DEVICE_FLAG creationFlags = D3D11_CREATE_DEVICE_FLAG.D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 
                     #if DEBUG
@@ -78,8 +85,6 @@ namespace ProjectEstrada
                     var pFeatureLevel = D3D_FEATURE_LEVEL.D3D_FEATURE_LEVEL_11_1;
 
                     // Create the Direct3D 11 API device object and a corresponding context.
-                    ID3D11Device* m_d3dDevice;
-                    ID3D11DeviceContext* m_d3dContext;
                     D3D11CreateDevice(
                         (IDXGIAdapter*)IntPtr.Zero.ToPointer(), // Specify nullptr to use the default adapter.
                         D3D_DRIVER_TYPE.D3D_DRIVER_TYPE_HARDWARE,
@@ -88,18 +93,17 @@ namespace ProjectEstrada
                         InteropUtilities.AsPointer(featureLevels.AsSpan()),
                         (uint)featureLevels.Length,
                         D3D11_SDK_VERSION, // UWP apps must set this to D3D11_SDK_VERSION.
-                        &m_d3dDevice, // Returns the Direct3D device created.
+                        m_d3dDevice.GetAddressOf(), // Returns the Direct3D device created.
                         InteropUtilities.AsPointer(ref pFeatureLevel),
-                        &m_d3dContext // Returns the device immediate context.
+                        m_d3dContext.GetAddressOf() // Returns the device immediate context.
                     );
 
                     // QI for DXGI device
-                    IDXGIDevice* dxgiDevice;
-                    ((ComPtr<ID3D11Device>)m_d3dDevice).As((ComPtr<IDXGIDevice>*)&dxgiDevice);
+                    m_d3dDevice.As(ref m_dxgiDevice);
 
                     // Get the DXGI adapter.
                     IDXGIAdapter* dxgiAdapter;
-                    dxgiDevice->GetAdapter(&dxgiAdapter);
+                    m_dxgiDevice.Get()->GetAdapter(&dxgiAdapter);
 
                     // Get the DXGI factory.
                     IDXGIFactory2* dxgiFactory;
@@ -108,31 +112,162 @@ namespace ProjectEstrada
 
                     // Create a swap chain by calling CreateSwapChainForComposition.
                     dxgiFactory->CreateSwapChainForComposition(
-                        (IUnknown*)m_d3dDevice,
+                        (IUnknown*)(ID3D11Device*)m_d3dDevice,
                         &swapChainDesc,
                         null,        // Allow on any display. 
-                        &swapChain
+                        m_swapChain.GetAddressOf()
                     );
 
-                    m_swapChainNative->SetSwapChain((IDXGISwapChain*)swapChain);
+                    m_swapChainNative.Get()->SetSwapChain((IDXGISwapChain*)m_swapChain.Get());
 
-                    int hr = swapChain->Present(1, 0);
+                    int hr = m_swapChain.Get()->Present(1, 0);
                     Marshal.ThrowExceptionForHR(hr);
+                    #endregion
 
-                    m_swapChain = swapChain;
+                    // Compile vertex shader
+                    #region Vertex shader
+                    const string vertexShaderName = "SimpleVertexShader";
+                    uint flags = D3DCOMPILE_ENABLE_STRICTNESS;
+#if DEBUG
+                    flags |= D3DCOMPILE_DEBUG;
+#endif
+                    // Prefer higher CS shader profile when possible as CS 5.0 provides better performance on 11-class hardware.
+                    var profile = (m_d3dDevice.Get()->GetFeatureLevel() >= D3D_FEATURE_LEVEL.D3D_FEATURE_LEVEL_11_0) ? "vs_5_0" : "vs_4_0_level_9_1";
+                    ID3DBlob* shaderBlob;
+                    ID3DBlob* errorBlob;
+                    HRESULT shaderCompileHr = D3DCompileFromFile(
+                        GetShaderFilePath(vertexShaderName).Select(c => (ushort)c).ToArray().AsSpan().AsPointer(),
+                        null,
+                        D3D_COMPILE_STANDARD_FILE_INCLUDE,
+                        Encoding.ASCII.GetBytes(vertexShaderName).Select(b => (sbyte)b).ToArray().AsSpan().AsPointer(),
+                        profile.Select(c => (sbyte)c).ToArray().AsSpan().AsPointer(),
+                        flags,
+                        0,
+                        &shaderBlob,
+                        &errorBlob
+                    );
+                    if (shaderCompileHr.FAILED)
+                    {
+                        var errorStr = Marshal.PtrToStringAnsi(new IntPtr(errorBlob->GetBufferPointer()));
+                        errorBlob->Release();
+                        return;
+                    }
+
+                    ID3D11VertexShader* vertexShader;
+                    Marshal.ThrowExceptionForHR(
+                        m_d3dDevice.Get()->CreateVertexShader(
+                            shaderBlob->GetBufferPointer(),
+                            shaderBlob->GetBufferSize(),
+                            null,
+                            &vertexShader
+                        )
+                    );
+
+                    // Create an input layout that matches the layout defined in the vertex shader code.
+                    // For this lesson, this is simply a DirectX::XMFLOAT2 vector defining the vertex position.
+                    D3D11_INPUT_ELEMENT_DESC[] basicVertexLayoutDesc =
+                    {
+                          new D3D11_INPUT_ELEMENT_DESC
+                          {
+                              SemanticName = "POSITION".GetAsciiSpan().AsPointer(),
+                              SemanticIndex = 0,
+                              Format = DXGI_FORMAT.DXGI_FORMAT_R32G32_FLOAT,
+                              InputSlot = 0,
+                              AlignedByteOffset = 0,
+                              InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA,
+                              InstanceDataStepRate = 0
+                          },
+                    };
+
+                    ID3D11InputLayout* inputLayout;
+                    Marshal.ThrowExceptionForHR(
+                        m_d3dDevice.Get()->CreateInputLayout(
+                            basicVertexLayoutDesc.AsSpan().AsPointer(),
+                            (uint)basicVertexLayoutDesc.Length,
+                            shaderBlob->GetBufferPointer(),
+                            shaderBlob->GetBufferSize(),
+                            &inputLayout
+                        )
+                    ); 
+                    #endregion
+
+                    // Compile pixel shader
+                    #region Pixel shader
+                    const string pixelShaderName = "SimplePixelShader";
+                    flags = D3DCOMPILE_ENABLE_STRICTNESS;
+#if DEBUG
+                    flags |= D3DCOMPILE_DEBUG;
+#endif
+                    // Prefer higher CS shader profile when possible as CS 5.0 provides better performance on 11-class hardware.
+                    profile = (m_d3dDevice.Get()->GetFeatureLevel() >= D3D_FEATURE_LEVEL.D3D_FEATURE_LEVEL_11_0) ? "ps_5_0" : "ps_4_0_level_9_1";
+                    shaderCompileHr = D3DCompileFromFile(
+                        GetShaderFilePath(pixelShaderName).Select(c => (ushort)c).ToArray().AsSpan().AsPointer(),
+                        null,
+                        D3D_COMPILE_STANDARD_FILE_INCLUDE,
+                        Encoding.ASCII.GetBytes(pixelShaderName).Select(b => (sbyte)b).ToArray().AsSpan().AsPointer(),
+                        profile.Select(c => (sbyte)c).ToArray().AsSpan().AsPointer(),
+                        flags,
+                        0,
+                        &shaderBlob,
+                        &errorBlob
+                    );
+                    if (shaderCompileHr.FAILED)
+                    {
+                        var errorStr = Marshal.PtrToStringAnsi(new IntPtr(errorBlob->GetBufferPointer()));
+                        errorBlob->Release();
+                        return;
+                    }
+
+                    ID3D11PixelShader* pixelShader;
+                    Marshal.ThrowExceptionForHR(
+                        m_d3dDevice.Get()->CreatePixelShader(
+                            shaderBlob->GetBufferPointer(),
+                            shaderBlob->GetBufferSize(),
+                            null,
+                            &pixelShader
+                        )
+                    );
+
+                    // Create an input layout that matches the layout defined in the vertex shader code.
+                    D3D11_INPUT_ELEMENT_DESC[] basicPixelLayoutDesc =
+                    {
+                          new D3D11_INPUT_ELEMENT_DESC
+                          {
+                              SemanticName = "SV_POSITION".GetAsciiSpan().AsPointer(),
+                              SemanticIndex = 0,
+                              Format = DXGI_FORMAT.DXGI_FORMAT_R32G32B32A32_FLOAT,
+                              InputSlot = 0,
+                              AlignedByteOffset = 0,
+                              InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA,
+                              InstanceDataStepRate = 0
+                          },
+                    };
+
+                    Marshal.ThrowExceptionForHR(
+                        m_d3dDevice.Get()->CreateInputLayout(
+                            basicPixelLayoutDesc.AsSpan().AsPointer(),
+                            (uint)basicPixelLayoutDesc.Length,
+                            shaderBlob->GetBufferPointer(),
+                            shaderBlob->GetBufferSize(),
+                            &inputLayout
+                        )
+                    );
+                    #endregion
+
+                    shaderBlob->Release();
+
+                    SwapChain.SizeChanged += SwapChain_SizeChanged;
                 }
                 finally
                 {
-                    m_swapChainNative->Release();
+                    m_swapChainNative.Get()->Release();
                 }
             }
-
-            SwapChain.SizeChanged += SwapChain_SizeChanged;
         }
 
         private void SwapChain_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            int hr = m_swapChain->ResizeBuffers(
+            int hr = m_swapChain.Get()->ResizeBuffers(
                 0,  // Don't change buffer count
                 (uint)e.NewSize.Width,
                 (uint)e.NewSize.Height,
@@ -141,13 +276,20 @@ namespace ProjectEstrada
             );
             Marshal.ThrowExceptionForHR(hr);
 
-            var rand = new Random();
-            var randColor = new DXGI_RGBA((float)rand.NextDouble(), (float)rand.NextDouble(), (float)rand.NextDouble());
-            System.Diagnostics.Debug.WriteLine($"rgb({randColor.r}, {randColor.g}, {randColor.b})");
-            hr = m_swapChain->SetBackgroundColor(InteropUtilities.AsPointer(ref randColor));
-            Marshal.ThrowExceptionForHR(hr);
+            // (re)-create the render target view
+            ID3D11Texture2D* backBuffer;
+            if (FAILED(m_swapChain.Get()->GetBuffer(0, typeof(ID3D11Texture2D).GUID, reinterpret_cast<void**>(backBuffer.GetAddressOf()))))
+                throw new Exception("Direct3D was unable to acquire the back buffer!");
+            if (FAILED(m_d3dDevice.Get()->CreateRenderTargetView(new ComPtr<ID3D11Texture2D>(backBuffer).Get(), 0, &m_renderTargetView)))
+                throw new Exception("Direct3D was unable to create the render target view!");
 
-            hr = m_swapChain->Present(1, 0);
+            //var rand = new Random();
+            //var randColor = new DXGI_RGBA((float)rand.NextDouble(), (float)rand.NextDouble(), (float)rand.NextDouble());
+            //System.Diagnostics.Debug.WriteLine($"rgb({randColor.r}, {randColor.g}, {randColor.b})");
+            //hr = m_swapChain->SetBackgroundColor(InteropUtilities.AsPointer(ref randColor));
+            //Marshal.ThrowExceptionForHR(hr);
+
+            hr = m_swapChain.Get()->Present(1, 0);
             Marshal.ThrowExceptionForHR(hr);
         }
 
@@ -187,15 +329,13 @@ namespace ProjectEstrada
             }
 
             if (HWND != IntPtr.Zero)
-            {
-                ShowWindow(HWND, SW_HIDE);
-            }
+                _ = ShowWindow(HWND, SW_HIDE);
         }
 
         private void Window_Closed(object sender, WindowEventArgs args)
         {
-            m_swapChain->Release();
-            m_swapChainNative->Release();
+            m_swapChain.Dispose();
+            m_swapChainNative.Dispose();
         }
     }
 }
