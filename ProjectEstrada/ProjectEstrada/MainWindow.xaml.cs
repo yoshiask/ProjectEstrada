@@ -31,7 +31,7 @@ namespace ProjectEstrada
             this.InitializeComponent();
         }
 
-        unsafe void InitSwapChain()
+        void InitSwapChain()
         {
             var panelUnknown = Marshal.GetIUnknownForObject(SwapChain);
             IntPtr swapChainPanelNativePtr = IntPtr.Zero;
@@ -277,10 +277,20 @@ namespace ProjectEstrada
             Marshal.ThrowExceptionForHR(hr);
 
             // (re)-create the render target view
-            ID3D11Texture2D* backBuffer;
-            if (FAILED(m_swapChain.Get()->GetBuffer(0, typeof(ID3D11Texture2D).GUID, reinterpret_cast<void**>(backBuffer.GetAddressOf()))))
+            ComPtr<ID3D11Texture2D> backBuffer = new ComPtr<ID3D11Texture2D>();
+            var d3d11Text2D = typeof(ID3D11Texture2D).GUID;
+            D3D11_RENDER_TARGET_VIEW_DESC desc = new D3D11_RENDER_TARGET_VIEW_DESC
+            {
+                ViewDimension = D3D11_RTV_DIMENSION.D3D11_RTV_DIMENSION_BUFFER
+            };
+            m_renderTargetView = new ComPtr<ID3D11RenderTargetView>();
+
+            if (FAILED(m_swapChain.Get()->GetBuffer(0, InteropUtilities.AsPointer(ref d3d11Text2D), (void**)backBuffer.GetAddressOf())))
                 throw new Exception("Direct3D was unable to acquire the back buffer!");
-            if (FAILED(m_d3dDevice.Get()->CreateRenderTargetView(new ComPtr<ID3D11Texture2D>(backBuffer).Get(), 0, &m_renderTargetView)))
+            if (FAILED(m_d3dDevice.Get()->CreateRenderTargetView(
+                (ID3D11Resource*)backBuffer.Get(),
+                null,
+                m_renderTargetView.GetAddressOf())))
                 throw new Exception("Direct3D was unable to create the render target view!");
 
             //var rand = new Random();
@@ -291,6 +301,9 @@ namespace ProjectEstrada
 
             hr = m_swapChain.Get()->Present(1, 0);
             Marshal.ThrowExceptionForHR(hr);
+
+            m_renderTargetView.Get()->Release();
+            backBuffer.Get()->Release();
         }
 
         private void SwapChain_Loaded(object sender, RoutedEventArgs e)
@@ -299,7 +312,7 @@ namespace ProjectEstrada
             HideCoreWindow();
         }
 
-        static unsafe void HideCoreWindow()
+        static void HideCoreWindow()
         {
             IntPtr HWND = IntPtr.Zero;
             try
