@@ -43,6 +43,25 @@ namespace ProjectEstrada
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
+            /* WINMAIN */
+            // create and initialize the game
+            DirectXGame game = new DirectXGame(new TerraFX.Interop.HINSTANCE());
+            bool gameInitialization = game.init();
+
+            // if the initialization was successful, run the game, else, try to clean up and exit the application
+            if (gameInitialization)
+            {
+                // initialization was successful -> run the game
+                int returnValue = game.run();
+
+                // clean up after the game has ended
+                game.shutdown(returnValue);
+            }
+            else
+            {
+                // a critical error occured during initialization, try to clean up and to print information about the error
+            }
+
             m_window = new MainWindow();
             m_window.Activate();
         }
