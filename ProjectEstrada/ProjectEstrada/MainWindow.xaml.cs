@@ -127,137 +127,8 @@ namespace ProjectEstrada
                     Marshal.ThrowExceptionForHR(hr);
                     #endregion
 
-                    // Compile vertex shader
-                    #region Vertex shader
-                    const string vertexShaderName = "SimpleVertexShader";
-                    uint flags = D3DCOMPILE_ENABLE_STRICTNESS;
-#if DEBUG
-                    flags |= D3DCOMPILE_DEBUG;
-#endif
-                    // Prefer higher CS shader profile when possible as CS 5.0 provides better performance on 11-class hardware.
-                    var profile = (m_d3dDevice.Get()->GetFeatureLevel() >= D3D_FEATURE_LEVEL.D3D_FEATURE_LEVEL_11_0) ? "vs_5_0" : "vs_4_0_level_9_1";
-                    ID3DBlob* shaderBlob;
-                    ID3DBlob* errorBlob;
-                    HRESULT shaderCompileHr = D3DCompileFromFile(
-                        GetShaderFilePath(vertexShaderName).Select(c => (ushort)c).ToArray().AsSpan().AsPointer(),
-                        null,
-                        D3D_COMPILE_STANDARD_FILE_INCLUDE,
-                        Encoding.ASCII.GetBytes(vertexShaderName).Select(b => (sbyte)b).ToArray().AsSpan().AsPointer(),
-                        profile.Select(c => (sbyte)c).ToArray().AsSpan().AsPointer(),
-                        flags,
-                        0,
-                        &shaderBlob,
-                        &errorBlob
-                    );
-                    if (shaderCompileHr.FAILED)
-                    {
-                        var errorStr = Marshal.PtrToStringAnsi(new IntPtr(errorBlob->GetBufferPointer()));
-                        errorBlob->Release();
-                        return;
-                    }
-
-                    ID3D11VertexShader* vertexShader;
-                    Marshal.ThrowExceptionForHR(
-                        m_d3dDevice.Get()->CreateVertexShader(
-                            shaderBlob->GetBufferPointer(),
-                            shaderBlob->GetBufferSize(),
-                            null,
-                            &vertexShader
-                        )
-                    );
-
-                    // Create an input layout that matches the layout defined in the vertex shader code.
-                    // For this lesson, this is simply a DirectX::XMFLOAT2 vector defining the vertex position.
-                    D3D11_INPUT_ELEMENT_DESC[] basicVertexLayoutDesc =
-                    {
-                          new D3D11_INPUT_ELEMENT_DESC
-                          {
-                              SemanticName = "POSITION".GetAsciiSpan().AsPointer(),
-                              SemanticIndex = 0,
-                              Format = DXGI_FORMAT.DXGI_FORMAT_R32G32_FLOAT,
-                              InputSlot = 0,
-                              AlignedByteOffset = 0,
-                              InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA,
-                              InstanceDataStepRate = 0
-                          },
-                    };
-
-                    ID3D11InputLayout* inputLayout;
-                    Marshal.ThrowExceptionForHR(
-                        m_d3dDevice.Get()->CreateInputLayout(
-                            basicVertexLayoutDesc.AsSpan().AsPointer(),
-                            (uint)basicVertexLayoutDesc.Length,
-                            shaderBlob->GetBufferPointer(),
-                            shaderBlob->GetBufferSize(),
-                            &inputLayout
-                        )
-                    ); 
-                    #endregion
-
-                    // Compile pixel shader
-                    #region Pixel shader
-                    const string pixelShaderName = "SimplePixelShader";
-                    flags = D3DCOMPILE_ENABLE_STRICTNESS;
-#if DEBUG
-                    flags |= D3DCOMPILE_DEBUG;
-#endif
-                    // Prefer higher CS shader profile when possible as CS 5.0 provides better performance on 11-class hardware.
-                    profile = (m_d3dDevice.Get()->GetFeatureLevel() >= D3D_FEATURE_LEVEL.D3D_FEATURE_LEVEL_11_0) ? "ps_5_0" : "ps_4_0_level_9_1";
-                    shaderCompileHr = D3DCompileFromFile(
-                        GetShaderFilePath(pixelShaderName).Select(c => (ushort)c).ToArray().AsSpan().AsPointer(),
-                        null,
-                        D3D_COMPILE_STANDARD_FILE_INCLUDE,
-                        Encoding.ASCII.GetBytes(pixelShaderName).Select(b => (sbyte)b).ToArray().AsSpan().AsPointer(),
-                        profile.Select(c => (sbyte)c).ToArray().AsSpan().AsPointer(),
-                        flags,
-                        0,
-                        &shaderBlob,
-                        &errorBlob
-                    );
-                    if (shaderCompileHr.FAILED)
-                    {
-                        var errorStr = Marshal.PtrToStringAnsi(new IntPtr(errorBlob->GetBufferPointer()));
-                        errorBlob->Release();
-                        return;
-                    }
-
-                    ID3D11PixelShader* pixelShader;
-                    Marshal.ThrowExceptionForHR(
-                        m_d3dDevice.Get()->CreatePixelShader(
-                            shaderBlob->GetBufferPointer(),
-                            shaderBlob->GetBufferSize(),
-                            null,
-                            &pixelShader
-                        )
-                    );
-
-                    // Create an input layout that matches the layout defined in the vertex shader code.
-                    D3D11_INPUT_ELEMENT_DESC[] basicPixelLayoutDesc =
-                    {
-                          new D3D11_INPUT_ELEMENT_DESC
-                          {
-                              SemanticName = "SV_POSITION".GetAsciiSpan().AsPointer(),
-                              SemanticIndex = 0,
-                              Format = DXGI_FORMAT.DXGI_FORMAT_R32G32B32A32_FLOAT,
-                              InputSlot = 0,
-                              AlignedByteOffset = 0,
-                              InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA,
-                              InstanceDataStepRate = 0
-                          },
-                    };
-
-                    Marshal.ThrowExceptionForHR(
-                        m_d3dDevice.Get()->CreateInputLayout(
-                            basicPixelLayoutDesc.AsSpan().AsPointer(),
-                            (uint)basicPixelLayoutDesc.Length,
-                            shaderBlob->GetBufferPointer(),
-                            shaderBlob->GetBufferSize(),
-                            &inputLayout
-                        )
-                    );
-                    #endregion
-
-                    shaderBlob->Release();
+                    TryCompileVertexShader("SimpleVertexShader", out var vertexInputLayout);
+                    TryCompilePixelShader("SimplePixelShader", out var pixelInputLayout);
 
                     SwapChain.SizeChanged += SwapChain_SizeChanged;
                 }
@@ -335,6 +206,159 @@ namespace ProjectEstrada
         {
             InitSwapChain();
             HideCoreWindow();
+        }
+
+        bool TryCompileVertexShader(string shaderName, out ComPtr<ID3D11InputLayout> inputLayout)
+        {
+            try
+            {
+                uint flags = D3DCOMPILE_ENABLE_STRICTNESS;
+#if DEBUG
+                flags |= D3DCOMPILE_DEBUG;
+#endif
+                // Prefer higher CS shader profile when possible as CS 5.0 provides better performance on 11-class hardware.
+                var profile = (m_d3dDevice.Get()->GetFeatureLevel() >= D3D_FEATURE_LEVEL.D3D_FEATURE_LEVEL_11_0) ? "vs_5_0" : "vs_4_0_level_9_1";
+                ID3DBlob* shaderBlob;
+                ID3DBlob* errorBlob;
+                HRESULT shaderCompileHr = D3DCompileFromFile(
+                    GetShaderFilePath(shaderName).Select(c => (ushort)c).ToArray().AsSpan().AsPointer(),
+                    null,
+                    D3D_COMPILE_STANDARD_FILE_INCLUDE,
+                    Encoding.ASCII.GetBytes(shaderName).Select(b => (sbyte)b).ToArray().AsSpan().AsPointer(),
+                    profile.Select(c => (sbyte)c).ToArray().AsSpan().AsPointer(),
+                    flags,
+                    0,
+                    &shaderBlob,
+                    &errorBlob
+                );
+                if (shaderCompileHr.FAILED)
+                {
+                    var errorStr = Marshal.PtrToStringAnsi(new IntPtr(errorBlob->GetBufferPointer()));
+                    errorBlob->Release();
+                    throw new Exception(errorStr);
+                }
+
+                ID3D11VertexShader* vertexShader;
+                Marshal.ThrowExceptionForHR(
+                    m_d3dDevice.Get()->CreateVertexShader(
+                        shaderBlob->GetBufferPointer(),
+                        shaderBlob->GetBufferSize(),
+                        null,
+                        &vertexShader
+                    )
+                );
+
+                // Create an input layout that matches the layout defined in the vertex shader code.
+                // For this lesson, this is simply a DirectX::XMFLOAT2 vector defining the vertex position.
+                D3D11_INPUT_ELEMENT_DESC[] basicVertexLayoutDesc =
+                {
+                          new D3D11_INPUT_ELEMENT_DESC
+                          {
+                              SemanticName = "POSITION".GetAsciiSpan().AsPointer(),
+                              SemanticIndex = 0,
+                              Format = DXGI_FORMAT.DXGI_FORMAT_R32G32_FLOAT,
+                              InputSlot = 0,
+                              AlignedByteOffset = 0,
+                              InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA,
+                              InstanceDataStepRate = 0
+                          },
+                    };
+
+                inputLayout = new ComPtr<ID3D11InputLayout>();
+                Marshal.ThrowExceptionForHR(
+                    m_d3dDevice.Get()->CreateInputLayout(
+                        basicVertexLayoutDesc.AsSpan().AsPointer(),
+                        (uint)basicVertexLayoutDesc.Length,
+                        shaderBlob->GetBufferPointer(),
+                        shaderBlob->GetBufferSize(),
+                        inputLayout.GetAddressOf()
+                    )
+                );
+
+                shaderBlob->Release();
+
+                return true;
+            }
+            catch
+            {
+                inputLayout = null;
+                return false;
+            }
+        }
+
+        bool TryCompilePixelShader(string shaderName, out ComPtr<ID3D11InputLayout> inputLayout)
+        {
+            try
+            {
+                ID3DBlob* shaderBlob;
+                ID3DBlob* errorBlob;
+                uint flags = D3DCOMPILE_ENABLE_STRICTNESS;
+#if DEBUG
+                flags |= D3DCOMPILE_DEBUG;
+#endif
+                // Prefer higher CS shader profile when possible as CS 5.0 provides better performance on 11-class hardware.
+                var profile = (m_d3dDevice.Get()->GetFeatureLevel() >= D3D_FEATURE_LEVEL.D3D_FEATURE_LEVEL_11_0) ? "ps_5_0" : "ps_4_0_level_9_1";
+                HRESULT shaderCompileHr = D3DCompileFromFile(
+                    GetShaderFilePath(shaderName).Select(c => (ushort)c).ToArray().AsSpan().AsPointer(),
+                    null,
+                    D3D_COMPILE_STANDARD_FILE_INCLUDE,
+                    Encoding.ASCII.GetBytes(shaderName).Select(b => (sbyte)b).ToArray().AsSpan().AsPointer(),
+                    profile.Select(c => (sbyte)c).ToArray().AsSpan().AsPointer(),
+                    flags,
+                    0,
+                    &shaderBlob,
+                    &errorBlob
+                );
+                if (shaderCompileHr.FAILED)
+                {
+                    var errorStr = Marshal.PtrToStringAnsi(new IntPtr(errorBlob->GetBufferPointer()));
+                    errorBlob->Release();
+                    throw new Exception(errorStr);
+                }
+
+                ID3D11PixelShader* pixelShader;
+                Marshal.ThrowExceptionForHR(
+                    m_d3dDevice.Get()->CreatePixelShader(
+                        shaderBlob->GetBufferPointer(),
+                        shaderBlob->GetBufferSize(),
+                        null,
+                        &pixelShader
+                    )
+                );
+
+                // Create an input layout that matches the layout defined in the vertex shader code.
+                D3D11_INPUT_ELEMENT_DESC[] basicPixelLayoutDesc =
+                {
+                          new D3D11_INPUT_ELEMENT_DESC
+                          {
+                              SemanticName = "SV_POSITION".GetAsciiSpan().AsPointer(),
+                              SemanticIndex = 0,
+                              Format = DXGI_FORMAT.DXGI_FORMAT_R32G32B32A32_FLOAT,
+                              InputSlot = 0,
+                              AlignedByteOffset = 0,
+                              InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA,
+                              InstanceDataStepRate = 0
+                          },
+                    };
+
+                inputLayout = new ComPtr<ID3D11InputLayout>();
+                Marshal.ThrowExceptionForHR(
+                    m_d3dDevice.Get()->CreateInputLayout(
+                        basicPixelLayoutDesc.AsSpan().AsPointer(),
+                        (uint)basicPixelLayoutDesc.Length,
+                        shaderBlob->GetBufferPointer(),
+                        shaderBlob->GetBufferSize(),
+                        inputLayout.GetAddressOf()
+                    )
+                );
+
+                return true;
+            }
+            catch
+            {
+                inputLayout = null;
+                return false;
+            }
         }
 
         void ClearBuffers()
