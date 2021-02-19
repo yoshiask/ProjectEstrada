@@ -25,6 +25,9 @@ namespace ProjectEstrada
         ComPtr<ID3D11Device> m_d3dDevice;
         ComPtr<ID3D11DeviceContext> m_d3dContext;
         ComPtr<ID3D11RenderTargetView> m_renderTargetView;
+        ComPtr<ID3D11DepthStencilView> m_depthStencilView;
+
+        DXGI_FORMAT colorFormat = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM;
 
         public MainWindow()
         {
@@ -56,7 +59,7 @@ namespace ProjectEstrada
                     {
                         Width = (uint)SwapChain.ActualWidth,
                         Height = (uint)SwapChain.ActualHeight,
-                        Format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM,        // This is the most common swapchain format.
+                        Format = colorFormat,        // This is the most common swapchain format.
                         Stereo = 0,
                         BufferUsage = (uint)(1L << (1 + 4)),
                         BufferCount = 2,
@@ -267,6 +270,11 @@ namespace ProjectEstrada
 
         private void SwapChain_SizeChanged(object sender, SizeChangedEventArgs e)
         {
+            m_d3dContext.Get()->ClearState();
+            m_renderTargetView = new ComPtr<ID3D11RenderTargetView>();
+            m_depthStencilView = new ComPtr<ID3D11DepthStencilView>();
+
+            // resize the swap chain
             int hr = m_swapChain.Get()->ResizeBuffers(
                 0,  // Don't change buffer count
                 (uint)e.NewSize.Width,
@@ -293,15 +301,32 @@ namespace ProjectEstrada
                 m_renderTargetView.GetAddressOf())))
                 throw new Exception("Direct3D was unable to create the render target view!");
 
-            //var rand = new Random();
-            //var randColor = new DXGI_RGBA((float)rand.NextDouble(), (float)rand.NextDouble(), (float)rand.NextDouble());
-            //System.Diagnostics.Debug.WriteLine($"rgb({randColor.r}, {randColor.g}, {randColor.b})");
-            //hr = m_swapChain->SetBackgroundColor(InteropUtilities.AsPointer(ref randColor));
-            //Marshal.ThrowExceptionForHR(hr);
+            // create the depth and stencil buffer
+            D3D11_TEXTURE2D_DESC dsd;
+            ComPtr<ID3D11Texture2D> dsBuffer = new ComPtr<ID3D11Texture2D>();
+            backBuffer.Get()->GetDesc(&dsd);
+            dsd.Format = DXGI_FORMAT.DXGI_FORMAT_D24_UNORM_S8_UINT;
+            dsd.Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT;
+            dsd.BindFlags = (uint)D3D11_BIND_FLAG.D3D11_BIND_DEPTH_STENCIL;
+            if (FAILED(m_d3dDevice.Get()->CreateTexture2D(&dsd, null, dsBuffer.GetAddressOf())))
+                throw new Exception("Direct3D was unable to create a 2D-texture!");
+            if (FAILED(m_d3dDevice.Get()->CreateDepthStencilView((ID3D11Resource*)dsBuffer.Get(), null, m_depthStencilView.GetAddressOf())))
+                throw new Exception("Direct3D was unable to create the depth and stencil buffer!");
 
-            hr = m_swapChain.Get()->Present(1, 0);
-            Marshal.ThrowExceptionForHR(hr);
+            // activate the depth and stencil buffer
+            m_d3dContext.Get()->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
 
+            // set the viewport to the entire backbuffer
+            D3D11_VIEWPORT vp;
+            vp.TopLeftX = 0;
+            vp.TopLeftY = 0;
+            vp.Width = dsd.Width;
+            vp.Height = dsd.Height;
+            vp.MinDepth = 0.0f;
+            vp.MaxDepth = 1.0f;
+            m_d3dContext.Get()->RSSetViewports(1, &vp);
+
+            Present();
             m_renderTargetView.Get()->Release();
             backBuffer.Get()->Release();
         }
@@ -310,6 +335,33 @@ namespace ProjectEstrada
         {
             InitSwapChain();
             HideCoreWindow();
+        }
+
+        void ClearBuffers()
+        {
+            var devCon = m_d3dContext.Get();
+            devCon->ClearState();
+            m_renderTargetView = new ComPtr<ID3D11RenderTargetView>();
+            m_depthStencilView = new ComPtr<ID3D11DepthStencilView>();
+
+            // clear the back buffer and depth / stencil buffer
+            float[] black = new[] { 0.0f, 0.0f, 0.0f, 0.0f };
+            devCon->ClearRenderTargetView(m_renderTargetView.Get(), black.AsSpan().AsPointer());
+            devCon->ClearDepthStencilView(
+                m_depthStencilView.Get(), (uint)(D3D11_CLEAR_FLAG.D3D11_CLEAR_DEPTH | D3D11_CLEAR_FLAG.D3D11_CLEAR_STENCIL), 1.0f, 0);
+        }
+
+        int Present()
+        {
+            HRESULT hr = m_swapChain.Get()->Present(0, DXGI_PRESENT_DO_NOT_WAIT);
+            if (FAILED(hr) && hr != DXGI_ERROR_WAS_STILL_DRAWING)
+            {
+                System.Diagnostics.Debug.WriteLine("The presentation of the scene failed!");
+                throw new Exception("Direct3D failed to present the scene!");
+            }
+
+            // return success
+            return 0;
         }
 
         static void HideCoreWindow()
