@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
@@ -26,6 +27,7 @@ namespace ProjectEstrada
         ComPtr<ID3D11DeviceContext> m_d3dContext;
         ComPtr<ID3D11RenderTargetView> m_renderTargetView;
         ComPtr<ID3D11DepthStencilView> m_depthStencilView;
+        ComPtr<ID3D11Buffer> vertexBuffer;
 
         DXGI_FORMAT colorFormat = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM;
 
@@ -122,13 +124,13 @@ namespace ProjectEstrada
                     );
 
                     m_swapChainNative.Get()->SetSwapChain((IDXGISwapChain*)m_swapChain.Get());
+                    #endregion
+
+                    InitPipeline();
+                    InitGraphics();
 
                     int hr = m_swapChain.Get()->Present(1, 0);
                     Marshal.ThrowExceptionForHR(hr);
-                    #endregion
-
-                    TryCompileVertexShader("SimpleVertexShader", out var vertexInputLayout);
-                    TryCompilePixelShader("SimplePixelShader", out var pixelInputLayout);
 
                     SwapChain.SizeChanged += SwapChain_SizeChanged;
                 }
@@ -141,15 +143,33 @@ namespace ProjectEstrada
 
         private void SwapChain_SizeChanged(object sender, SizeChangedEventArgs e)
         {
+            uint width, height;
+            if (sender is Tuple<double, double> size)
+            {
+                width = (uint)size.Item1;
+                height = (uint)size.Item2;
+            }
+            else
+            {
+                width = (uint)e.NewSize.Width;
+                height = (uint)e.NewSize.Height;
+            }
+            if (width <= 0 || height <= 0)
+                return;
+
+            InitPipeline();
+
             m_d3dContext.Get()->ClearState();
+            m_renderTargetView.Dispose();
+            m_depthStencilView.Dispose();
             m_renderTargetView = new ComPtr<ID3D11RenderTargetView>();
             m_depthStencilView = new ComPtr<ID3D11DepthStencilView>();
 
             // resize the swap chain
             int hr = m_swapChain.Get()->ResizeBuffers(
                 0,  // Don't change buffer count
-                (uint)e.NewSize.Width,
-                (uint)e.NewSize.Height,
+                width,
+                height,
                 DXGI_FORMAT.DXGI_FORMAT_UNKNOWN,    // Don't change format
                 0   // No flags
             );
@@ -198,7 +218,7 @@ namespace ProjectEstrada
             m_d3dContext.Get()->RSSetViewports(1, &vp);
 
             Present();
-            m_renderTargetView.Get()->Release();
+            //m_renderTargetView.Get()->Release();
             backBuffer.Get()->Release();
         }
 
@@ -206,9 +226,13 @@ namespace ProjectEstrada
         {
             InitSwapChain();
             HideCoreWindow();
+
+            var swapChainPanel = sender as Microsoft.UI.Xaml.Controls.SwapChainPanel;
+            SwapChain_SizeChanged(new Tuple<double, double>(swapChainPanel.ActualWidth, swapChainPanel.ActualHeight), null);
+            Render();
         }
 
-        bool TryCompileVertexShader(string shaderName, out ComPtr<ID3D11InputLayout> inputLayout)
+        bool TryCompileVertexShader(string shaderName, out ComPtr<ID3DBlob> shaderBlob, out ComPtr<ID3D11VertexShader> vertexShader)
         {
             try
             {
@@ -218,7 +242,7 @@ namespace ProjectEstrada
 #endif
                 // Prefer higher CS shader profile when possible as CS 5.0 provides better performance on 11-class hardware.
                 var profile = (m_d3dDevice.Get()->GetFeatureLevel() >= D3D_FEATURE_LEVEL.D3D_FEATURE_LEVEL_11_0) ? "vs_5_0" : "vs_4_0_level_9_1";
-                ID3DBlob* shaderBlob;
+                shaderBlob = new ComPtr<ID3DBlob>();
                 ID3DBlob* errorBlob;
                 HRESULT shaderCompileHr = D3DCompileFromFile(
                     GetShaderFilePath(shaderName).Select(c => (ushort)c).ToArray().AsSpan().AsPointer(),
@@ -228,7 +252,7 @@ namespace ProjectEstrada
                     profile.Select(c => (sbyte)c).ToArray().AsSpan().AsPointer(),
                     flags,
                     0,
-                    &shaderBlob,
+                    shaderBlob.GetAddressOf(),
                     &errorBlob
                 );
                 if (shaderCompileHr.FAILED)
@@ -238,59 +262,31 @@ namespace ProjectEstrada
                     throw new Exception(errorStr);
                 }
 
-                ID3D11VertexShader* vertexShader;
+                vertexShader = new ComPtr<ID3D11VertexShader>();
                 Marshal.ThrowExceptionForHR(
                     m_d3dDevice.Get()->CreateVertexShader(
-                        shaderBlob->GetBufferPointer(),
-                        shaderBlob->GetBufferSize(),
+                        shaderBlob.Get()->GetBufferPointer(),
+                        shaderBlob.Get()->GetBufferSize(),
                         null,
-                        &vertexShader
+                        vertexShader.GetAddressOf()
                     )
                 );
-
-                // Create an input layout that matches the layout defined in the vertex shader code.
-                // For this lesson, this is simply a DirectX::XMFLOAT2 vector defining the vertex position.
-                D3D11_INPUT_ELEMENT_DESC[] basicVertexLayoutDesc =
-                {
-                          new D3D11_INPUT_ELEMENT_DESC
-                          {
-                              SemanticName = "POSITION".GetAsciiSpan().AsPointer(),
-                              SemanticIndex = 0,
-                              Format = DXGI_FORMAT.DXGI_FORMAT_R32G32_FLOAT,
-                              InputSlot = 0,
-                              AlignedByteOffset = 0,
-                              InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA,
-                              InstanceDataStepRate = 0
-                          },
-                    };
-
-                inputLayout = new ComPtr<ID3D11InputLayout>();
-                Marshal.ThrowExceptionForHR(
-                    m_d3dDevice.Get()->CreateInputLayout(
-                        basicVertexLayoutDesc.AsSpan().AsPointer(),
-                        (uint)basicVertexLayoutDesc.Length,
-                        shaderBlob->GetBufferPointer(),
-                        shaderBlob->GetBufferSize(),
-                        inputLayout.GetAddressOf()
-                    )
-                );
-
-                shaderBlob->Release();
 
                 return true;
             }
             catch
             {
-                inputLayout = null;
+                vertexShader = null;
+                shaderBlob = null;
                 return false;
             }
         }
 
-        bool TryCompilePixelShader(string shaderName, out ComPtr<ID3D11InputLayout> inputLayout)
+        bool TryCompilePixelShader(string shaderName, out ComPtr<ID3DBlob> shaderBlob, out ComPtr<ID3D11PixelShader> pixelShader)
         {
             try
             {
-                ID3DBlob* shaderBlob;
+                shaderBlob = new ComPtr<ID3DBlob>();
                 ID3DBlob* errorBlob;
                 uint flags = D3DCOMPILE_ENABLE_STRICTNESS;
 #if DEBUG
@@ -306,7 +302,7 @@ namespace ProjectEstrada
                     profile.Select(c => (sbyte)c).ToArray().AsSpan().AsPointer(),
                     flags,
                     0,
-                    &shaderBlob,
+                    shaderBlob.GetAddressOf(),
                     &errorBlob
                 );
                 if (shaderCompileHr.FAILED)
@@ -316,39 +312,13 @@ namespace ProjectEstrada
                     throw new Exception(errorStr);
                 }
 
-                ID3D11PixelShader* pixelShader;
+                pixelShader = new ComPtr<ID3D11PixelShader>();
                 Marshal.ThrowExceptionForHR(
                     m_d3dDevice.Get()->CreatePixelShader(
-                        shaderBlob->GetBufferPointer(),
-                        shaderBlob->GetBufferSize(),
+                        shaderBlob.Get()->GetBufferPointer(),
+                        shaderBlob.Get()->GetBufferSize(),
                         null,
-                        &pixelShader
-                    )
-                );
-
-                // Create an input layout that matches the layout defined in the vertex shader code.
-                D3D11_INPUT_ELEMENT_DESC[] basicPixelLayoutDesc =
-                {
-                          new D3D11_INPUT_ELEMENT_DESC
-                          {
-                              SemanticName = "SV_POSITION".GetAsciiSpan().AsPointer(),
-                              SemanticIndex = 0,
-                              Format = DXGI_FORMAT.DXGI_FORMAT_R32G32B32A32_FLOAT,
-                              InputSlot = 0,
-                              AlignedByteOffset = 0,
-                              InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA,
-                              InstanceDataStepRate = 0
-                          },
-                    };
-
-                inputLayout = new ComPtr<ID3D11InputLayout>();
-                Marshal.ThrowExceptionForHR(
-                    m_d3dDevice.Get()->CreateInputLayout(
-                        basicPixelLayoutDesc.AsSpan().AsPointer(),
-                        (uint)basicPixelLayoutDesc.Length,
-                        shaderBlob->GetBufferPointer(),
-                        shaderBlob->GetBufferSize(),
-                        inputLayout.GetAddressOf()
+                        pixelShader.GetAddressOf()
                     )
                 );
 
@@ -356,23 +326,110 @@ namespace ProjectEstrada
             }
             catch
             {
-                inputLayout = null;
+                shaderBlob = null;
+                pixelShader = null;
                 return false;
             }
+        }
+
+        void InitPipeline()
+        {
+            TryCompileVertexShader("SimpleVertexShader", out var vertexShaderBlob, out var vertexShader);
+            TryCompilePixelShader("SimplePixelShader", out var pixelShaderBlob, out var pixelShader);
+
+            // Set the shader objects as the active shaders
+            m_d3dContext.Get()->VSSetShader(vertexShader, null, 0);
+            m_d3dContext.Get()->PSSetShader(pixelShader, null, 0);
+
+            // Create an input layout that matches the layout defined in the vertex shader code.
+            D3D11_INPUT_ELEMENT_DESC[] basicVertexLayoutDesc =
+            {
+                new D3D11_INPUT_ELEMENT_DESC
+                {
+                    SemanticName = "POSITION".GetAsciiSpan().AsPointer(),
+                    SemanticIndex = 0,
+                    Format = DXGI_FORMAT.DXGI_FORMAT_R32G32_FLOAT,
+                    InputSlot = 0,
+                    AlignedByteOffset = 0,
+                    InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA,
+                    InstanceDataStepRate = 0
+                },
+            };
+
+            var inputLayout = new ComPtr<ID3D11InputLayout>();
+            Marshal.ThrowExceptionForHR(
+                m_d3dDevice.Get()->CreateInputLayout(
+                    basicVertexLayoutDesc.AsSpan().AsPointer(),
+                    (uint)basicVertexLayoutDesc.Length,
+                    vertexShaderBlob.Get()->GetBufferPointer(),
+                    vertexShaderBlob.Get()->GetBufferSize(),
+                    inputLayout.GetAddressOf()
+                )
+            );
+
+            // set active input layout
+            m_d3dContext.Get()->IASetInputLayout(inputLayout.Get());
+        }
+
+        void InitGraphics()
+        {
+            // create the triangle
+            Vector3[] triangleVertices = { new Vector3(0.0f, 0.1f, 0.3f), new Vector3(0.11f, -0.1f, 0.3f), new Vector3(-0.11f, -0.1f, 0.3f) };
+
+            // set up buffer description
+            D3D11_BUFFER_DESC bd;
+            bd.ByteWidth = (uint)(sizeof(Vector3) * triangleVertices.Length);
+            bd.Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT;
+            bd.BindFlags = (uint)D3D11_BIND_FLAG.D3D11_BIND_VERTEX_BUFFER;
+            bd.CPUAccessFlags = 0;
+            bd.MiscFlags = 0;
+            bd.StructureByteStride = 0;
+
+            // define subresource data
+            D3D11_SUBRESOURCE_DATA srd = new D3D11_SUBRESOURCE_DATA
+            {
+                pSysMem = triangleVertices.AsSpan().GetPointer()
+            };
+
+            // create the vertex buffer
+            if (FAILED(m_d3dDevice.Get()->CreateBuffer(&bd, &srd, vertexBuffer.GetAddressOf())))
+                throw new Exception("Critical Error: Unable to create vertex buffer!");
         }
 
         void ClearBuffers()
         {
             var devCon = m_d3dContext.Get();
             devCon->ClearState();
-            m_renderTargetView = new ComPtr<ID3D11RenderTargetView>();
-            m_depthStencilView = new ComPtr<ID3D11DepthStencilView>();
 
             // clear the back buffer and depth / stencil buffer
-            float[] black = new[] { 0.0f, 0.0f, 0.0f, 0.0f };
-            devCon->ClearRenderTargetView(m_renderTargetView.Get(), black.AsSpan().AsPointer());
+            float[] color = new[] { 0.0f, 0.0f, 0.0f, 0.0f };
+            devCon->ClearRenderTargetView(m_renderTargetView.Get(), color.AsSpan().AsPointer());
             devCon->ClearDepthStencilView(
                 m_depthStencilView.Get(), (uint)(D3D11_CLEAR_FLAG.D3D11_CLEAR_DEPTH | D3D11_CLEAR_FLAG.D3D11_CLEAR_STENCIL), 1.0f, 0);
+        }
+
+        void Render()
+        {
+            // clear the back buffer and the depth/stencil buffer
+            ClearBuffers();
+
+            // render
+
+            // set the vertex buffer
+            uint stride = (uint)sizeof(Vector3);
+            uint offset = 0;
+            m_d3dContext.Get()->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
+
+            // set primitive topology
+            m_d3dContext.Get()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY.D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+            // draw 3 vertices, starting from vertex 0
+            m_d3dContext.Get()->Draw(3, 0);
+
+            // present the scene
+            if (Present() != 0)
+                throw new Exception("Failed to present the scene!");
+
         }
 
         int Present()
