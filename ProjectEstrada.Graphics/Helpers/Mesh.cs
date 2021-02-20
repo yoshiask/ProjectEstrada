@@ -1,7 +1,8 @@
-﻿using System;
+﻿using SharpDX;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Numerics;
+using System.Runtime.InteropServices;
 using Windows.Foundation;
 
 namespace ProjectEstrada.Graphics.Helpers
@@ -11,7 +12,7 @@ namespace ProjectEstrada.Graphics.Helpers
         public List<Vector3> VertexPositions { get; set; } = new List<Vector3>();
         public List<Vector3> VertexColors { get; set; } = new List<Vector3>();
         public List<Vector3> VertexNormals { get; set; } = new List<Vector3>();
-        public List<Tuple<short, short, short>> Triangles { get; set; } = new List<Tuple<short, short, short>>();
+        public List<Triangle> Triangles { get; set; } = new List<Triangle>();
 
         public static Mesh FromObj(Stream stream)
         {
@@ -45,7 +46,7 @@ namespace ProjectEstrada.Graphics.Helpers
                             string[] vIdxStr = parts[i].Split('/');
                             if (vIdxStr.Length == 1)
                             {
-                                mesh.Triangles.Add(new Tuple<short, short, short>(
+                                mesh.Triangles.Add(new Triangle(
                                     short.Parse(parts[1]), short.Parse(parts[2]), short.Parse(parts[3])
                                 ));
                             }
@@ -77,10 +78,10 @@ namespace ProjectEstrada.Graphics.Helpers
                     new Vector3(-size.width, 0f, -size.height),
                     new Vector3( size.width, 0f, -size.height)
                 };
-                mesh.Triangles = new List<Tuple<short, short, short>>()
+                mesh.Triangles = new List<Triangle>()
                 {
-                    new Tuple<short, short, short>(0, 1, 2),
-                    new Tuple<short, short, short>(1, 2, 3)
+                    new Triangle(0, 1, 2),
+                    new Triangle(1, 2, 3)
                 };
             }
             else
@@ -102,7 +103,7 @@ namespace ProjectEstrada.Graphics.Helpers
                 }
 
                 // Create the list of triangles
-                mesh.Triangles = new List<Tuple<short, short, short>>(sideResolution * sideResolution * 2);
+                mesh.Triangles = new List<Triangle>(sideResolution * sideResolution * 2);
                 // Loop through the top left corner of each quad, which contains two triangles.
                 // Ignore the last row and last column of vertices, since they aren't the top
                 // left corner of triangles.
@@ -110,13 +111,13 @@ namespace ProjectEstrada.Graphics.Helpers
                 for (int i = 0; i < numTopLeftCorners; i++)
                 {
                     // Top triangle
-                    mesh.Triangles.Add(new Tuple<short, short, short>(
-                        (short)i, (short)(i + 1), (short)(i + verticesPerSide)
+                    mesh.Triangles.Add(new Triangle(
+                        i, i + 1, i + verticesPerSide
                     ));
 
                     // Bottom triangle
-                    mesh.Triangles.Add(new Tuple<short, short, short>(
-                        (short)(i + 1), (short)(i + verticesPerSide), (short)(i + verticesPerSide + 1)
+                    mesh.Triangles.Add(new Triangle(
+                        i + 1, i + verticesPerSide, i + verticesPerSide + 1
                     ));
                 }
             }
@@ -138,5 +139,29 @@ namespace ProjectEstrada.Graphics.Helpers
         {
             throw new NotImplementedException();
         }
+    }
+
+    /// <summary>
+    /// Defines a triangle using three indices
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    public struct Triangle
+    {
+        public Triangle(int a, int b, int c)
+        {
+            A = (ushort)a;
+            B = (ushort)b;
+            C = (ushort)c;
+        }
+        public Triangle(ushort a, ushort b, ushort c)
+        {
+            A = a;
+            B = b;
+            C = c;
+        }
+
+        public ushort A { get; set; }
+        public ushort B { get; set; }
+        public ushort C { get; set; }
     }
 }

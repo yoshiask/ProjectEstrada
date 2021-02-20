@@ -120,18 +120,12 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Controls\GLUWPControl.xaml.cs">
-      <DependentUpon>GLUWPControl.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Controls\GraphControl.xaml.cs">
       <DependentUpon>GraphControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Helpers\DXImageSource.cs" />
     <Compile Include="Helpers\EventThrottler.cs" />
     <Compile Include="Helpers\Mesh.cs" />
-    <Compile Include="MeshRenderer.cs" />
-    <Compile Include="RendererBase.cs" />
-    <Compile Include="SampleRenderer.cs" />
     <Compile Include="Helpers\MathHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Properties\ProjectEstrada.Graphics.rd.xml" />
@@ -163,20 +157,12 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <Page Include="Controls\GLUWPControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Controls\GraphControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\GLUWP\GLUWP.csproj">
-      <Project>{c44c2876-313d-4bfb-a04c-5e9da349e423}</Project>
-      <Name>GLUWP</Name>
-    </ProjectReference>
     <ProjectReference Include="..\ProjectEstrada.Core\ProjectEstrada.Core.csproj">
       <Project>{87418bfd-1ebe-4a54-951f-bff7611e2c9c}</Project>
       <Name>ProjectEstrada.Core</Name>

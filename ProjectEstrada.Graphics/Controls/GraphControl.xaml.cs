@@ -2,10 +2,10 @@
 using ProjectEstrada.Core.Functions;
 using ProjectEstrada.Core.Helpers;
 using ProjectEstrada.Graphics.Helpers;
+using SharpDX;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Numerics;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -27,9 +27,9 @@ namespace ProjectEstrada.Graphics.Controls
         //public GraphControl()
         //{
         //    this.InitializeComponent();
-
+        //
         //    var plane = Helpers.Mesh.CreateSquarePlane((1f, 1f), 5);
-
+        //
         //    plane.VertexPositions = plane.VertexPositions.Select(v =>
         //    {
         //        // TODO: Switch to the following:
@@ -37,17 +37,18 @@ namespace ProjectEstrada.Graphics.Controls
         //        v.Y = (float)scalar.Evaluate(v.X, v.Z)[0];
         //        return v;
         //    }).ToList();
-
+        //
         //    // (v.Y + 1) / 2 + 0.25f, 0f, 2 / (v.Y + 1) - 0.25f
         //    plane.VertexColors = plane.VertexPositions.Select(v => new Vector3(
         //        MathHelper.MapRange(v.Y, -1, 1, 0, 1), 0f,  1 / MathHelper.MapRange(v.Y, -1, 1, 0, 1) + 0.35f
         //    )).ToList();
-
+        //
         //    Content = new GLUWPControl(() => new MeshRenderer(plane));
         //}
 
-        // An image source derived from SurfaceImageSource, used to draw DirectX content
-
+        /// <summary>
+        /// An image source derived from <see cref="Windows.UI.Xaml.Media.Imaging.SurfaceImageSource"/>, used to draw DirectX content
+        /// </summary>
         public DXImageSource DXDrawing { get; set; }
 
         public GraphControl()
@@ -64,7 +65,23 @@ namespace ProjectEstrada.Graphics.Controls
 
         private void ImageCanvas_Loaded(object sender, RoutedEventArgs e)
         {
-            DXDrawing = new DXImageSource((int)DXCanvas.ActualWidth, (int)DXCanvas.ActualHeight, true);
+            float d = 0.75f;
+            var mesh = Mesh.CreateSquarePlane((d, d), 6);
+
+            mesh.VertexPositions = mesh.VertexPositions.Select(v =>
+            {
+                // TODO: Switch to the following:
+                // v = scalar.Parameterize().EvaluateAsVector3(v.X, v.Z);
+                v.Y = (float)scalar.Evaluate(v.X, v.Z)[0];
+                return v;
+            }).ToList();
+
+            // (v.Y + 1) / 2 + 0.25f, 0f, 2 / (v.Y + 1) - 0.25f
+            mesh.VertexColors = mesh.VertexPositions.Select(v => new Vector3(
+                MathHelper.MapRange(v.Y, -d, d, 0, 1), 0f, 1 / MathHelper.MapRange(v.Y, -1, 1, 0, d)
+            )).ToList();
+
+            DXDrawing = new DXImageSource((int)DXCanvas.ActualWidth, (int)DXCanvas.ActualHeight, true, mesh);
 
             DXCanvas.Background = new ImageBrush()
             {

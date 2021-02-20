@@ -46,6 +46,7 @@ using Device = SharpDX.Direct3D11.Device;
 using DeviceContext = SharpDX.Direct3D11.DeviceContext;
 using FeatureLevel = SharpDX.Direct3D.FeatureLevel;
 using InputElement = SharpDX.Direct3D11.InputElement;
+using System.Linq;
 
 namespace ProjectEstrada.Graphics.Helpers
 {
@@ -86,6 +87,8 @@ namespace ProjectEstrada.Graphics.Helpers
 
         private ModelViewProjectionConstantBuffer constantBufferData;
 
+        public Mesh Mesh { get; internal set; }
+
         private int indexCount;
 
         private int width;
@@ -93,11 +96,12 @@ namespace ProjectEstrada.Graphics.Helpers
 
         private float frameCount;
 
-        public DXImageSource(int pixelWidth, int pixelHeight, bool isOpaque)
+        public DXImageSource(int pixelWidth, int pixelHeight, bool isOpaque, Mesh mesh)
             : base(pixelWidth, pixelHeight, isOpaque)
         {
             width = pixelWidth;
             height = pixelHeight;
+            Mesh = mesh;
 
             CreateDeviceResources();
 
@@ -182,17 +186,18 @@ namespace ProjectEstrada.Graphics.Helpers
             constantBuffer = new Buffer(d3dDevice, constantBufferDesc);
 
             // Describe the vertices of the cube.
-            var cubeVertices = new[]
-            {
-                new VertexPositionColor(new Vector3(-0.5f, -0.5f, -0.5f), new Vector3(0.0f, 0.0f, 0.0f)),
-                new VertexPositionColor(new Vector3(-0.5f, -0.5f, 0.5f), new Vector3(0.0f, 0.0f, 1.0f)),
-                new VertexPositionColor(new Vector3(-0.5f, 0.5f, -0.5f), new Vector3(0.0f, 1.0f, 0.0f)),
-                new VertexPositionColor(new Vector3(-0.5f, 0.5f, 0.5f), new Vector3(0.0f, 1.0f, 1.0f)),
-                new VertexPositionColor(new Vector3(0.5f, -0.5f, -0.5f), new Vector3(1.0f, 0.0f, 0.0f)),
-                new VertexPositionColor(new Vector3(0.5f, -0.5f, 0.5f), new Vector3(1.0f, 0.0f, 1.0f)),
-                new VertexPositionColor(new Vector3(0.5f, 0.5f, -0.5f), new Vector3(1.0f, 1.0f, 0.0f)),
-                new VertexPositionColor(new Vector3(0.5f, 0.5f, 0.5f), new Vector3(1.0f, 1.0f, 1.0f)),
-            };
+            //var cubeVertices = new[]
+            //{
+            //    new VertexPositionColor(new Vector3(-0.5f, -0.5f, -0.5f), new Vector3(0.0f, 0.0f, 0.0f)),
+            //    new VertexPositionColor(new Vector3(-0.5f, -0.5f, 0.5f), new Vector3(0.0f, 0.0f, 1.0f)),
+            //    new VertexPositionColor(new Vector3(-0.5f, 0.5f, -0.5f), new Vector3(0.0f, 1.0f, 0.0f)),
+            //    new VertexPositionColor(new Vector3(-0.5f, 0.5f, 0.5f), new Vector3(0.0f, 1.0f, 1.0f)),
+            //    new VertexPositionColor(new Vector3(0.5f, -0.5f, -0.5f), new Vector3(1.0f, 0.0f, 0.0f)),
+            //    new VertexPositionColor(new Vector3(0.5f, -0.5f, 0.5f), new Vector3(1.0f, 0.0f, 1.0f)),
+            //    new VertexPositionColor(new Vector3(0.5f, 0.5f, -0.5f), new Vector3(1.0f, 1.0f, 0.0f)),
+            //    new VertexPositionColor(new Vector3(0.5f, 0.5f, 0.5f), new Vector3(1.0f, 1.0f, 1.0f)),
+            //};
+            var cubeVertices = Mesh.VertexPositions.Zip(Mesh.VertexColors, (p, c) => new VertexPositionColor(p, c)).ToArray();
 
             var vertexBufferDesc = new BufferDescription()
             {
@@ -202,26 +207,34 @@ namespace ProjectEstrada.Graphics.Helpers
             vertexBuffer = Buffer.Create(d3dDevice, cubeVertices, vertexBufferDesc);
 
             // Describe the cube indices.
-            var cubeIndices = new ushort[]
+            //var cubeIndices = new ushort[]
+            //{
+            //    0, 2, 1, // -x
+            //    1, 2, 3,
+
+            //    4, 5, 6, // +x
+            //    5, 7, 6,
+
+            //    0, 1, 5, // -y
+            //    0, 5, 4,
+
+            //    2, 6, 7, // +y
+            //    2, 7, 3,
+
+            //    0, 4, 6, // -z
+            //    0, 6, 2,
+
+            //    1, 3, 7, // +z
+            //    1, 7, 5,
+            //};
+            var cubeIndices = new ushort[Mesh.Triangles.Count * 3];
+            int i = 0;
+            foreach (var tri in Mesh.Triangles)
             {
-                0, 2, 1, // -x
-                1, 2, 3,
-
-                4, 5, 6, // +x
-                5, 7, 6,
-
-                0, 1, 5, // -y
-                0, 5, 4,
-
-                2, 6, 7, // +y
-                2, 7, 3,
-
-                0, 4, 6, // -z
-                0, 6, 2,
-
-                1, 3, 7, // +z
-                1, 7, 5,
-            };
+                cubeIndices[i++] = tri.A;
+                cubeIndices[i++] = tri.B;
+                cubeIndices[i++] = tri.C;
+            }
             indexCount = cubeIndices.Length;
 
             // Create the index buffer.
@@ -369,7 +382,7 @@ namespace ProjectEstrada.Graphics.Helpers
             d3dContext.InputAssembler.SetIndexBuffer(indexBuffer, Format.R16_UInt, 0);
 
             // Set topology to triangle list.
-            d3dContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleList;
+            d3dContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleStrip;
 
             // Set input layout.
             d3dContext.InputAssembler.InputLayout = inputLayout;
