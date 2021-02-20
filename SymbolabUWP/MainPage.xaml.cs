@@ -1,10 +1,14 @@
-﻿using SymbolabUWP.ViewModels;
+﻿using SharpDX.D3DCompiler;
+using SymbolabUWP.ViewModels;
 using System;
+using System.IO;
 using Windows.ApplicationModel.Core;
+using Windows.Storage;
 using Windows.UI.Core;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Navigation;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -30,6 +34,44 @@ namespace SymbolabUWP
             {
                 
             };
+        }
+
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
+
+            if (false)
+            {
+                var destFolder = ApplicationData.Current.LocalFolder;
+                System.Diagnostics.Debug.WriteLine(destFolder.Path);
+
+                StorageFolder InstallationFolder = Windows.ApplicationModel.Package.Current.InstalledLocation;
+                StorageFile file = await InstallationFolder.GetFileAsync(@"ProjectEstrada.Graphics\Assets\Shaders\SimplePixelShader.hlsl");
+                string source = await FileIO.ReadTextAsync(file);
+                var result = ShaderBytecode.Compile(source, "main", "ps_4_0_level_9_1");
+                if (!result.HasErrors)
+                {
+                    var destFile = await destFolder.CreateFileAsync("SimplePixelShader.cso", CreationCollisionOption.ReplaceExisting);
+                    using var stream = await destFile.OpenStreamForWriteAsync();
+                    using var writer = new BinaryWriter(stream);
+                    writer.Write(result.Bytecode.Data);
+                    writer.Flush();
+                    stream.Flush();
+                }
+
+                file = await InstallationFolder.GetFileAsync(@"ProjectEstrada.Graphics\Assets\Shaders\SimpleVertexShader.hlsl");
+                source = await FileIO.ReadTextAsync(file);
+                result = ShaderBytecode.Compile(source, "main", "vs_4_0_level_9_1");
+                if (!result.HasErrors)
+                {
+                    var destFile = await destFolder.CreateFileAsync("SimpleVertexShader.cso", CreationCollisionOption.ReplaceExisting);
+                    using var stream = await destFile.OpenStreamForWriteAsync();
+                    using var writer = new BinaryWriter(stream);
+                    writer.Write(result.Bytecode.Data);
+                    writer.Flush();
+                    stream.Flush();
+                }
+            }
         }
 
         private void Text_Click(object sender, RoutedEventArgs e)

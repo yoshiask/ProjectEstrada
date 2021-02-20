@@ -9,6 +9,6 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <!--<local:GLUWPControl x:Name="Canvas"/>-->
-    
+    <Border x:Name="DXCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+
 </UserControl>
