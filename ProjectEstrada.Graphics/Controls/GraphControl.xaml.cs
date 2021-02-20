@@ -78,7 +78,7 @@ namespace ProjectEstrada.Graphics.Controls
 
             // (v.Y + 1) / 2 + 0.25f, 0f, 2 / (v.Y + 1) - 0.25f
             mesh.VertexColors = mesh.VertexPositions.Select(v => new Vector3(
-                MathHelper.MapRange(v.Y, -d, d, 0, 1), 0f, 1 / MathHelper.MapRange(v.Y, -1, 1, 0, d)
+                MathHelper.MapRange(v.Y, -d, d, 0, 1), 0f, 1 - MathHelper.MapRange(v.Y, -1, 1, 0, d)
             )).ToList();
 
             DXDrawing = new DXImageSource((int)DXCanvas.ActualWidth, (int)DXCanvas.ActualHeight, true, mesh);
