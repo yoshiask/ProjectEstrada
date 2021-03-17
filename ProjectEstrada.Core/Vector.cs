@@ -188,9 +188,11 @@ namespace ProjectEstrada.Core
 		/// </summary>
 		public static void MakeSameDimension(Vector a, Vector b)
 		{
-			if (a.Size >= b.Size)
+			if (a.Size == b.Size)
+				return;
+			else if (a.Size > b.Size)
 				b.SetDimension(a.Size);
-			if (b.Size < a.Size)
+			else if (b.Size < a.Size)
 				a.SetDimension(b.Size);
 		}
 

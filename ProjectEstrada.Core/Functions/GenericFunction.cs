@@ -18,6 +18,7 @@ namespace ProjectEstrada.Core.Functions
                 // TODO: This really should be put with the code that parses functions,
                 // since a function with no inputs isn't a function
                 Guard.IsGreaterThanOrEqualTo(Inputs.Count, 1, nameof(Inputs));
+                Guard.IsNotNull(FunctionBody, nameof(FunctionBody));
 
                 if (Inputs.Count == 1)
                 {
@@ -30,6 +31,8 @@ namespace ProjectEstrada.Core.Functions
                 {
                     if (FunctionBody.Size == 1)
                         return FunctionType.Scalar;
+                    else if (FunctionBody.Size == Inputs.Count)
+                        return FunctionType.Transformative;
                     else
                         return FunctionType.VectorValued;
                 }
@@ -141,7 +144,7 @@ namespace ProjectEstrada.Core.Functions
                     // TODO: Change vec to overrightarrow
                     return $"\\vec{{{Name}}}{varList} = {FunctionBody.Latexise()}";
 
-                case FunctionType.Transformation:
+                case FunctionType.Transformative:
                     if (Type == FunctionType.Simple)
                     {
                         return $"\\widehat{{{Name}}}:{Inputs[0]} \\rightarrow {FunctionBody[0].Latexise()}";

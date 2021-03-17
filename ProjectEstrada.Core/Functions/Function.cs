@@ -55,8 +55,6 @@ namespace ProjectEstrada.Core.Functions
         Scalar,
         Parametric,
         Transformative,
-        Transformation = Transformative,
         VectorValued,
-        VectorField = VectorValued
     }
 }

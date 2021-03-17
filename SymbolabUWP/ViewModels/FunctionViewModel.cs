@@ -60,5 +60,11 @@ namespace SymbolabUWP.ViewModels
             get => fontSize;
             set => SetProperty(ref fontSize, value);
         }
+
+        public FunctionType RequestedType
+        {
+            get => Function.RequestedType;
+            set => SetProperty(Function.RequestedType, value, Function, (u, n) => u.RequestedType = n);
+        }
     }
 }

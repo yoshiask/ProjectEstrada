@@ -33,6 +33,10 @@ namespace ProjectEstrada.Core.Helpers
 
             // Find where the equality operator is
             int idxOfEquals = atoms.IndexOf(atoms.First(a => a is Relation));
+            // If there is nothing after the equality operator, it's not
+            // a valid function
+            Guard.IsLessThan(idxOfEquals + 1, atoms.Count, nameof(atoms));
+
 
             // Figure out which kind of function this is
             if (atoms[0] is Variable)
@@ -67,13 +71,13 @@ namespace ProjectEstrada.Core.Helpers
                 if (accent.Nucleus == "\u20d7")
                 {
                     // Vector
-                    function.RequestedType = FunctionType.VectorField;
+                    function.RequestedType = FunctionType.VectorValued;
                 }
                 // Combining Circumflex Accent
                 else if (accent.Nucleus == "\u0302")
                 {
                     // Transformation
-                    function.RequestedType = FunctionType.Transformation;
+                    function.RequestedType = FunctionType.Transformative;
 
                     // Convert the transformation into a vector-valued function
                     // for easier parsing

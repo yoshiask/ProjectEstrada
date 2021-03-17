@@ -8,7 +8,10 @@
     xmlns:controls="using:SymbolabUWP.Controls"
     xmlns:winui="using:Microsoft.UI.Xaml.Controls"
     xmlns:toolkit="using:Microsoft.Toolkit.Uwp.UI.Controls"
-    xmlns:viewmodels="using:SymbolabUWP.ViewModels" xmlns:graphics="using:ProjectEstrada.Graphics.Controls"
+    xmlns:tkex="using:Microsoft.Toolkit.Uwp.UI.Extensions"
+    xmlns:viewmodels="using:SymbolabUWP.ViewModels"
+    xmlns:graphics="using:ProjectEstrada.Graphics.Controls"
+    xmlns:func="using:ProjectEstrada.Core.Functions"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
     
@@ -93,13 +96,14 @@
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*"/>
-                            <RowDefinition MinHeight="100" Height="*"/>
-                            <RowDefinition MinHeight="100" Height="*"/>
+                            <RowDefinition MinHeight="125" Height="*"/>
+                            <RowDefinition MinHeight="125" Height="*"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         <TextBox PlaceholderText="Insert equation here" GotFocus="TextInput_GotFocus"
                                  TextWrapping="Wrap" AcceptsReturn="False" CornerRadius="0"
                                  HorizontalAlignment="Stretch"
-                                 Text="{x:Bind InputText, Mode=TwoWay}"/>
+                                 Text="{x:Bind InputText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
                         <controls:LatexCanvas LaTeXString="{x:Bind InputText, Mode=OneWay}" Grid.Row="1"
                                               Background="{ThemeResource AppBarBackgroundThemeBrush}"
@@ -110,6 +114,20 @@
                                               Background="{ThemeResource AppBarBackgroundThemeBrush}"
                                               Foreground="{ThemeResource DefaultTextForegroundThemeBrush}"
                                               FontSize="{x:Bind FontSize, Mode=OneWay}"/>
+                        <StackPanel Orientation="Horizontal" Spacing="4" Grid.Row="3">
+                            <StackPanel.Resources>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="Margin" Value="8,0,4,0"/>
+                                </Style>
+                            </StackPanel.Resources>
+                            <TextBlock Text="Requested type:"/>
+                            <ComboBox ItemsSource="{tkex:EnumValues Type=func:FunctionType}" SelectedItem="{x:Bind Function.RequestedType, Mode=OneWay}"/>
+                            <TextBlock Text="Inferred type:"/>
+                            <ComboBox ItemsSource="{tkex:EnumValues Type=func:FunctionType}" SelectedItem="{x:Bind Function.Type, Mode=OneWay}"/>
+                            <TextBlock Text="Color:"/>
+                            <toolkit:ColorPickerButton SelectedColor="{x:Bind Color, Mode=OneWay}"/>
+                        </StackPanel>
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>

@@ -336,7 +336,7 @@ namespace ProjectEstrada.Graphics.Helpers
                     }
                     else
                     {
-                        throw;
+                         throw;
                     }
                 }
             }
