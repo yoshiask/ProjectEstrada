@@ -53,8 +53,7 @@
         </Grid>
 
         <toolkit:TabbedCommandBar Grid.Row="1" Grid.ColumnSpan="2" 
-                                  Background="{ThemeResource SystemControlChromeMediumLowAcrylicWindowMediumBrush}"
-                                  ContentBackground="{ThemeResource SystemControlChromeLowAcrylicWindowBrush}">
+                                  Background="{ThemeResource SystemControlChromeMediumLowAcrylicWindowMediumBrush}">
             <toolkit:TabbedCommandBar.Resources>
                 <Style TargetType="toolkit:TabbedCommandBarItem">
                     <Setter Property="Background" Value="{ThemeResource SystemControlChromeLowAcrylicWindowBrush}"/>
