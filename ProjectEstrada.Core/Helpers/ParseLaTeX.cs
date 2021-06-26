@@ -187,6 +187,14 @@ namespace ProjectEstrada.Core.Helpers
                     {
                         output += "*";
                     }
+                    else if (binaryOperator.Nucleus == "−")
+                    {
+                        output += "-";
+                    }
+                    else
+                    {
+                        output += binaryOperator.Nucleus;
+                    }
                 }
                 else if (atom is LargeOperator largeOperator)
                 {
