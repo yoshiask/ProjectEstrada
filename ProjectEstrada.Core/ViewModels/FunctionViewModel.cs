@@ -1,9 +1,9 @@
 ﻿using Microsoft.Toolkit.Mvvm.ComponentModel;
 using ProjectEstrada.Core.Functions;
 using ProjectEstrada.Core.Helpers;
-using Windows.UI;
+using System.Drawing;
 
-namespace SymbolabUWP.ViewModels
+namespace ProjectEstrada.Core.ViewModels
 {
     public class FunctionViewModel : ObservableRecipient
     {

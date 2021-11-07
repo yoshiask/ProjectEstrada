@@ -5,19 +5,8 @@
     xmlns:local="using:ProjectEstrada"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d"
-    Closed="Window_Closed">
+    mc:Ignorable="d">
 
-    <Grid Background="Blue">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition/>
-            <ColumnDefinition/>
-        </Grid.ColumnDefinitions>
-
-        <Border Background="Red" Grid.Column="1">
-            <SwapChainPanel x:Name="SwapChain" Loaded="SwapChain_Loaded"/>
-        </Border>
-
-    </Grid>
-
+    
+    
 </Window>

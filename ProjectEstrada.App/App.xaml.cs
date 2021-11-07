@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
@@ -6,6 +7,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.UI.Xaml.Shapes;
+using ProjectEstrada.Core.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -26,6 +28,8 @@ namespace ProjectEstrada
     /// </summary>
     public partial class App : Application
     {
+        private MainWindow m_window;
+
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
@@ -33,7 +37,6 @@ namespace ProjectEstrada
         public App()
         {
             this.InitializeComponent();
-            this.Suspending += OnSuspending;
         }
 
         /// <summary>
@@ -43,22 +46,31 @@ namespace ProjectEstrada
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
-            m_window = new MainWindow();
+            Services = ConfigureServices();
+
+            m_window = new()
+            {
+                Content = new Views.Shell()
+            };
             m_window.Activate();
         }
 
         /// <summary>
-        /// Invoked when application execution is being suspended.  Application state is saved
-        /// without knowing whether the application will be terminated or resumed with the contents
-        /// of memory still intact.
+        /// Gets the <see cref="IServiceProvider"/> instance to resolve application services.
         /// </summary>
-        /// <param name="sender">The source of the suspend request.</param>
-        /// <param name="e">Details about the suspend request.</param>
-        private void OnSuspending(object sender, SuspendingEventArgs e)
-        {
-            // Save application state and stop any background activity
-        }
+        public IServiceProvider Services { get; private set; }
 
-        private Window m_window;
+        /// <summary>
+        /// Configures the services for the application.
+        /// </summary>
+        private static IServiceProvider ConfigureServices()
+        {
+            var services = new ServiceCollection();
+
+            //services.AddSingleton<ISettingsService, SettingsService>();
+            services.AddTransient<MainViewModel>();
+
+            return services.BuildServiceProvider();
+        }
     }
 }

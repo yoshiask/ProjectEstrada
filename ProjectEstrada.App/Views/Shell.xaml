@@ -1,18 +1,18 @@
 ﻿<Page
-    x:Class="SymbolabUWP.MainPage"
+    x:Class="ProjectEstrada.Views.Shell"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:SymbolabUWP"
+    xmlns:local="using:ProjectEstrada.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:controls="using:SymbolabUWP.Controls"
+    xmlns:controls="using:ProjectEstrada.Controls"
     xmlns:winui="using:Microsoft.UI.Xaml.Controls"
-    xmlns:toolkit="using:Microsoft.Toolkit.Uwp.UI.Controls"
-    xmlns:viewmodels="using:SymbolabUWP.ViewModels"
+    xmlns:toolkit="using:Microsoft.Toolkit.WinUI.UI.Controls"
+    xmlns:viewmodels="using:ProjectEstrada.Core.ViewModels"
     xmlns:graphics="using:ProjectEstrada.Graphics.Controls"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-    
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="32"/>
@@ -132,4 +132,5 @@
 
         <Border x:Name="GraphContainer" Grid.Column="1" Grid.Row="2" Grid.RowSpan="2"/>
     </Grid>
+    
 </Page>

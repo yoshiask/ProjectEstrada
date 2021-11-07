@@ -1,33 +1,43 @@
-﻿using ProjectEstrada.Core.ViewModels;
-using Windows.ApplicationModel.Core;
-using Windows.UI.Core;
-using Windows.UI.ViewManagement;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
+﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Navigation;
+using ProjectEstrada.Core.ViewModels;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
+using Windows.Foundation;
+using Windows.Foundation.Collections;
 
-// The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
+// To learn more about WinUI, the WinUI project structure,
+// and more about our project templates, see: http://aka.ms/winui-project-info.
 
-namespace SymbolabUWP
+namespace ProjectEstrada.Views
 {
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class MainPage : Page
+    public sealed partial class Shell : Page
     {
         public MainViewModel ViewModel => (MainViewModel)DataContext;
 
         private TextBox lastFocusedTextBox = null;
 
-        public MainPage()
+        public Shell()
         {
-            this.InitializeComponent();
-            this.DataContext = ((App)Application.Current).Services.GetService(typeof(MainViewModel));
+            InitializeComponent();
+            DataContext = ((App)Application.Current).Services.GetService(typeof(MainViewModel));
 
             Window.Current.SetTitleBar(TitlebarGrid);
 
-            GraphContainer.Child = new ProjectEstrada.Graphics.Controls.GraphControl()
+            GraphContainer.Child = new Graphics.Controls.GraphControl()
             {
-                
+
             };
         }
 
@@ -90,20 +100,12 @@ namespace SymbolabUWP
 
         private async void OpenGraph_Click(object sender, RoutedEventArgs e)
         {
-            CoreApplicationView newView = CoreApplication.CreateNewView();
-            int newViewId = 0;
+            Window newView = new();
             string formulaText = lastFocusedTextBox.Text;
-            await newView.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-            {
-                Frame frame = new Frame();
-                frame.Navigate(typeof(Views.GraphView), formulaText);
-                Window.Current.Content = frame;
-                // You have to activate the window in order to show it later.
-                Window.Current.Activate();
-
-                newViewId = ApplicationView.GetForCurrentView().Id;
-            });
-            bool viewShown = await ApplicationViewSwitcher.TryShowAsStandaloneAsync(newViewId);
+            Frame frame = new();
+            frame.Navigate(typeof(Views.GraphView), formulaText);
+            newView.Content = frame;
+            newView.Activate();
         }
 
         private void TextInput_GotFocus(object sender, RoutedEventArgs e)
