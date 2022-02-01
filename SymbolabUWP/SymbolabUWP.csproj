@@ -205,10 +205,6 @@
       <Project>{87418bfd-1ebe-4a54-951f-bff7611e2c9c}</Project>
       <Name>ProjectEstrada.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ProjectEstrada.Graphics\ProjectEstrada.Graphics.csproj">
-      <Project>{0e2c5b9a-3ab2-4215-adad-b8300dff9da3}</Project>
-      <Name>ProjectEstrada.Graphics</Name>
-    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
