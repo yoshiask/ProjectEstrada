@@ -10,14 +10,14 @@ namespace ProjectEstrada.Core
 {
     public class Vector : IEquatable<Vector>, ILatexiseable
     {
-		Entity[] vector;
+		Entity[] _vector;
 
 		/// <summary>
 		/// Gets the dimension of the vector.
 		/// </summary>
 		public Constants.Axis Dimension => (Constants.Axis)Size;
 
-        public int Size => vector.Length;
+        public int Size => _vector.Length;
 
         public bool IsReadOnly => false;
 
@@ -29,7 +29,7 @@ namespace ProjectEstrada.Core
         /// <param name="vals"></param>
         public Vector(params Entity[] vals)
 		{
-			vector = vals;
+			_vector = vals;
 		}
 
 		/// <summary>
@@ -38,11 +38,11 @@ namespace ProjectEstrada.Core
 		/// <param name="dim"></param>
 		public Vector(int dim)
 		{
-			vector = new Entity[dim];
+			_vector = new Entity[dim];
 		}
 		public Vector(Constants.Axis dim)
 		{
-			vector = new Entity[(int)dim];
+			_vector = new Entity[(int)dim];
 		}
 
 		public Vector(string str)
@@ -54,7 +54,7 @@ namespace ProjectEstrada.Core
 			str = str.Remove(0, 1);
 			str = str.Remove(str.Length - 1, 1);
 
-			vector = str.Split(',').Select(s => MathS.FromString(s)).ToArray();
+			_vector = str.Split(',').Select(s => MathS.FromString(s)).ToArray();
         }
 
 		//
@@ -65,10 +65,10 @@ namespace ProjectEstrada.Core
 		/// <param name="dim"></param>
 		public void SetDimension(int dim)
 		{
-			var oldVector = vector;
+			var oldVector = _vector;
 			int oldDim = Size;
-			vector = new Entity[dim];
-			Array.Copy(oldVector, vector, oldDim);
+			_vector = new Entity[dim];
+			Array.Copy(oldVector, _vector, oldDim);
 		}
 		public void SetDimension(Constants.Axis dim)
 		{
@@ -81,7 +81,7 @@ namespace ProjectEstrada.Core
 		/// <param name="index">The location of the coordinate. 0 is X, 1 is Y, 2 is Z, and so on</param>
 		public Entity GetComponent(int index)
 		{
-			return vector[index];
+			return _vector[index];
 		}
 		public Entity GetComponent(Constants.Axis index)
 		{
@@ -95,7 +95,7 @@ namespace ProjectEstrada.Core
 		/// <param name="v">The new value of the component</param>
 		public void SetComponent(int index, Entity v)
 		{
-			vector[index] = v;
+			_vector[index] = v;
 		}
 		public void SetComponent(Constants.Axis index, Entity v)
 		{
@@ -108,7 +108,7 @@ namespace ProjectEstrada.Core
 		public Entity GetMagnitude()
 		{
 			Entity sum = 0;
-			foreach (Entity v in vector)
+			foreach (Entity v in _vector)
 			{
 				sum += v.Pow(2);
 			}
@@ -166,7 +166,7 @@ namespace ProjectEstrada.Core
 
 		public override string ToString()
 		{
-			return "<" + String.Join(", ", vector.Select(c => c.ToString())) + ">";
+			return "<" + String.Join(", ", _vector.Select(c => c.ToString())) + ">";
 		}
 
 		public string Latexise()
@@ -175,12 +175,12 @@ namespace ProjectEstrada.Core
 		}
 		public string Latexise(string left, string right)
         {
-			return "\\left" + left + " " + String.Join(", ", vector.Select(c => c.Latexise())) + " \\right" + right;
+			return "\\left" + left + " " + String.Join(", ", _vector.Select(c => c.Latexise())) + " \\right" + right;
 		}
 
 		public Entity[] ToArray()
 		{
-			return vector;
+			return _vector;
 		}
 
 		/// <summary>
@@ -200,7 +200,7 @@ namespace ProjectEstrada.Core
         {
 			var simple = new Entity[Size];
 			for (int i = 0; i < Size; i++)
-				simple[i] = vector[i].Simplify();
+				simple[i] = _vector[i].Simplify();
 			return new Vector(simple);
         }
 
@@ -208,7 +208,7 @@ namespace ProjectEstrada.Core
         {
 			var simple = new Entity[Size];
 			for (int i = 0; i < Size; i++)
-				simple[i] = vector[i].Substitute(x, value);
+				simple[i] = _vector[i].Substitute(x, value);
 			return new Vector(simple);
 		}
 
@@ -217,7 +217,7 @@ namespace ProjectEstrada.Core
         {
 			var numerical = new double[Size];
 			for (int i = 0; i < Size; i++)
-				numerical[i] = vector[i].EvalNumerical().ToNumerics().Real;
+				numerical[i] = _vector[i].EvalNumerical().ToNumerics().Real;
 			return MathNet.Numerics.LinearAlgebra.Vector<double>.Build.DenseOfArray(numerical);
 		}
 
