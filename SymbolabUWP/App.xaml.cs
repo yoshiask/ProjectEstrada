@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using ProjectEstrada.Core.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -124,7 +125,7 @@ namespace SymbolabUWP
             var services = new ServiceCollection();
 
             //services.AddSingleton<ISettingsService, SettingsService>();
-            services.AddTransient<ViewModels.MainViewModel>();
+            services.AddTransient<MainViewModel>();
 
             return services.BuildServiceProvider();
         }

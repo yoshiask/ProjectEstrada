@@ -136,7 +136,7 @@ namespace ProjectEstrada.Core.Helpers
                         var components = inner.InnerList.Split(new Punctuation(","));
 
                         function.FunctionBody = new Vector(
-                            "<" + String.Join(",", components.Select(c => ConvertToMathString(c))) + ">"
+                            "<" + string.Join(",", components.Select(c => ConvertToMathString(c))) + ">"
                         );
                     }
                 }
@@ -200,20 +200,20 @@ namespace ProjectEstrada.Core.Helpers
                 {
                     if (largeOperator.Nucleus == "∫")
                     {
+                        // Find the variable to integrate with respect to
+                        bool foundWRT = false;
+                        int idxOfWRT = i + 1;
+                        while (!foundWRT && idxOfWRT + 1 < atoms.Count)
+                        {
+                            foundWRT = atoms[idxOfWRT] is Variable intWRTMarker && intWRTMarker.Nucleus == "d"
+                                && atoms[idxOfWRT + 1] is Variable;
+                            idxOfWRT++;
+                        }
+
                         // Figure out which kind of intergral we're dealing with
                         if (largeOperator.Subscript.Count > 0 || largeOperator.Superscript.Count > 0)
                         {
                             // Definite integral
-
-                            // Find the variable to integrate with respect to
-                            bool foundWRT = false;
-                            int idxOfWRT = i + 1;
-                            while (!foundWRT && idxOfWRT + 1 < atoms.Count)
-                            {
-                                foundWRT = atoms[idxOfWRT] is Variable intWRTMarker && intWRTMarker.Nucleus == "d"
-                                    && atoms[idxOfWRT + 1] is Variable;
-                                idxOfWRT++;
-                            }
 
                             // Get the bounds of integration
                             LaTeXParser.MathListFromLaTeX(@"\infty").Deconstruct(out MathList defaultUpperBound, out _);
@@ -241,16 +241,6 @@ namespace ProjectEstrada.Core.Helpers
                         else
                         {
                             // Indefinite integral
-
-                            // Find the variable to integrate with respect to
-                            bool foundWRT = false;
-                            int idxOfWRT = i + 1;
-                            while (!foundWRT && idxOfWRT + 1 < atoms.Count)
-                            {
-                                foundWRT = atoms[idxOfWRT] is Variable intWRTMarker && intWRTMarker.Nucleus == "d"
-                                    && atoms[idxOfWRT + 1] is Variable;
-                                idxOfWRT++;
-                            }
 
                             // Get the list of atoms that we need to integrate
                             // i+1 to skip the integral symbol, and idxOfWRT-i-2 to remove the dx

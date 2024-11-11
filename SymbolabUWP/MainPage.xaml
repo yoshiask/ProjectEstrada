@@ -8,8 +8,7 @@
     xmlns:controls="using:SymbolabUWP.Controls"
     xmlns:winui="using:Microsoft.UI.Xaml.Controls"
     xmlns:toolkit="using:Microsoft.Toolkit.Uwp.UI.Controls"
-    xmlns:viewmodels="using:SymbolabUWP.ViewModels"
-    xmlns:graphics="using:ProjectEstrada.Graphics.Controls"
+    xmlns:viewmodels="using:ProjectEstrada.Core.ViewModels"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
     
@@ -130,6 +129,8 @@
             </Button>
         </StackPanel>
 
-        <Border x:Name="GraphContainer" Grid.Column="1" Grid.Row="2" Grid.RowSpan="2"/>
+        <Border x:Name="GraphContainer" Grid.Column="1" Grid.Row="2" Grid.RowSpan="2">
+            <SwapChainPanel x:Name="GraphicsPanel" Loaded="GraphicsPanel_Loaded"/>
+        </Border>
     </Grid>
 </Page>
